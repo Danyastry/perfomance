@@ -23,4 +23,15 @@
     <string name="startup_history_empty">No launches yet. Pick a mode and restart a few times.</string>
     <string name="startup_clear">Clear</string>
     <string name="startup_stats">median %1$d ms, best %2$d ms, launches: %3$d</string>
+    <string name="startup_profile_title">Baseline Profile on this device</string>
+    <string name="startup_profile_compiled">Compiled with the profile</string>
+    <string name="startup_profile_compiled_explanation">ART compiled the methods listed in the Baseline Profile ahead of time, so startup does not wait for the JIT.</string>
+    <string name="startup_profile_awaiting">Installed, waiting for compilation</string>
+    <string name="startup_profile_awaiting_explanation">ART compiles the profile in the background when the device is idle. To force it: adb shell cmd package compile -m speed-profile -f com.danyastry.performance</string>
+    <string name="startup_profile_debuggable">Not used in debug builds</string>
+    <string name="startup_profile_debuggable_explanation">ART runs debuggable apps with the JIT only and ignores profiles. Install the release build to see the profile take effect.</string>
+    <string name="startup_profile_none">No profile installed</string>
+    <string name="startup_profile_none_explanation">This build has no Baseline Profile, so every launch starts with interpreted and JIT-compiled code.</string>
+    <string name="startup_profile_unknown">Status unavailable</string>
+    <string name="startup_profile_unknown_explanation">ProfileVerifier could not read the compilation status on this device.</string>
 </resources>

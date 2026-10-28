@@ -2,6 +2,7 @@ package com.danyastry.performance.feature.startup.ui
 
 import com.danyastry.performance.feature.startup.data.StartupStore
 import com.danyastry.performance.feature.startup.model.InitMode
+import com.danyastry.performance.feature.startup.model.ProfileStatus
 import com.danyastry.performance.feature.startup.model.StartupSample
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
@@ -73,6 +74,13 @@ class StartupViewModelTest {
         viewModel.onUseLibrary()
         advanceUntilIdle()
         assertThat(viewModel.state.value.firstUseMillis).isEqualTo(0)
+    }
+
+    @Test
+    fun `shows the profile status it reads`() = runTest {
+        val viewModel = StartupViewModel(store, lastLaunch, library, UnconfinedTestDispatcher(), profileStatus = { ProfileStatus.COMPILED })
+
+        assertThat(viewModel.state.value.profileStatus).isEqualTo(ProfileStatus.COMPILED)
     }
 
     @Test

@@ -2,6 +2,7 @@ package com.danyastry.performance.feature.startup.ui
 
 import com.danyastry.performance.feature.startup.model.InitMode
 import com.danyastry.performance.feature.startup.model.ModeStats
+import com.danyastry.performance.feature.startup.model.ProfileStatus
 import com.danyastry.performance.feature.startup.model.StartupSample
 
 data class StartupUiState(
@@ -12,6 +13,7 @@ data class StartupUiState(
     val libraryReady: Boolean = false,
     val firstUseMillis: Long? = null,
     val usingLibrary: Boolean = false,
+    val profileStatus: ProfileStatus? = null,
 ) {
     val restartNeeded: Boolean
         get() = launchedWith != null && launchedWith != selectedMode

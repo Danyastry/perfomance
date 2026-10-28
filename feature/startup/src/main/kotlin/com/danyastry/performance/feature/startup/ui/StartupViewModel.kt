@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.danyastry.performance.feature.startup.data.StartupStore
 import com.danyastry.performance.feature.startup.logic.StartupStats
 import com.danyastry.performance.feature.startup.model.InitMode
+import com.danyastry.performance.feature.startup.model.ProfileStatus
 import com.danyastry.performance.feature.startup.model.StartupSample
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
@@ -21,6 +22,7 @@ class StartupViewModel(
     private val library: StartupLibrary,
     private val worker: CoroutineDispatcher = Dispatchers.Default,
     private val clock: () -> Long = System::nanoTime,
+    private val profileStatus: suspend () -> ProfileStatus? = { null },
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(
@@ -35,6 +37,10 @@ class StartupViewModel(
     val state: StateFlow<StartupUiState> = _state.asStateFlow()
 
     init {
+        viewModelScope.launch {
+            val status = profileStatus()
+            _state.update { it.copy(profileStatus = status) }
+        }
         viewModelScope.launch {
             lastLaunch.collect { sample ->
                 if (sample != null) {
