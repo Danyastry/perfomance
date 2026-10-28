@@ -1,0 +1,17 @@
+<resources>
+    <string name="ui_category_startup">Startup</string>
+    <string name="ui_category_compose">Compose</string>
+    <string name="ui_category_scrolling">Scrolling</string>
+    <string name="ui_category_memory">Memory and main thread</string>
+    <string name="ui_category_under_the_hood">Under the hood</string>
+    <string name="ui_category_startup_description">Cold start, Baseline Profiles and lazy initialization, measured</string>
+    <string name="ui_category_compose_description">What makes Compose recompose, counted live</string>
+    <string name="ui_category_scrolling_description">Frame timing and jank in long lists</string>
+    <string name="ui_category_memory_description">Leaks, StrictMode, allocations and trace sections</string>
+    <string name="ui_category_under_the_hood_description">How ART, the frame pipeline and the garbage collector really work</string>
+    <string name="ui_requirement_android">Android %1$s+</string>
+    <string name="ui_requirement_needs_android">Needs Android %1$s</string>
+    <string name="ui_environment_emulator">Running on an emulator. Times here are only good for comparing two versions of the same code, not as real-device numbers.</string>
+    <string name="ui_environment_device">Running on a real device. Close other apps and keep the phone cool for steady numbers.</string>
+    <string name="ui_environment_debuggable">This is a debug build. Debug builds run much slower; benchmark a release build.</string>
+</resources>
