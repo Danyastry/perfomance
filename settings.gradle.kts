@@ -26,3 +26,5 @@ rootProject.name = "performance"
 
 include(":app")
 include(":core:ui")
+
+include(":feature:startup")

@@ -25,6 +25,7 @@ android {
 
 dependencies {
     implementation(projects.core.ui)
+    implementation(projects.feature.startup)
 
 
     implementation(libs.androidx.core.ktx)
