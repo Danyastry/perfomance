@@ -1,0 +1,16 @@
+<resources>
+    <string name="recomposition_intro">Each card runs the same UI twice. The numbers count how many times each side was composed. Run the ticker and watch which side keeps counting. These numbers do not depend on the emulator.</string>
+    <string name="recomposition_run">Run ticker</string>
+    <string name="recomposition_pause">Pause</string>
+    <string name="recomposition_reset">Reset counts</string>
+    <string name="recomposition_count">Compositions: %1$d</string>
+    <string name="recomposition_stability_title">1. Unstable parameters</string>
+    <string name="recomposition_stability_explanation">The parent recomposes on every tick and maps its data to the same names again. A List parameter is unstable, so Compose compares it by identity and the new instance makes the child recompose. An @Immutable class is compared with equals and the child is skipped. Note: listOf with only constant values would not show this, because the compiler treats it as a static expression that never changes.</string>
+    <string name="recomposition_read_title">2. Reading state too early</string>
+    <string name="recomposition_read_explanation">Both dots move with the ticker. The left one reads the value during composition and recomposes every tick. The right one reads it inside Modifier.offset with a lambda, so only layout runs again.</string>
+    <string name="recomposition_derived_title">3. derivedStateOf</string>
+    <string name="recomposition_derived_explanation">A level changes on every tick, but the text only cares whether it is above 50. Reading the level directly recomposes on every change; derivedStateOf recomposes only when the answer flips.</string>
+    <string name="recomposition_keys_title">4. Keys in lists</string>
+    <string name="recomposition_keys_explanation">Add an item at the top. Without keys, rows are matched by position, so every row gets new data and recomposes. With key(id), existing rows keep their identity and only the new row is composed.</string>
+    <string name="recomposition_add_top">Add at top</string>
+</resources>

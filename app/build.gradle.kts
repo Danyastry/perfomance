@@ -29,6 +29,7 @@ android {
 dependencies {
     implementation(projects.core.ui)
     implementation(projects.feature.startup)
+    implementation(projects.feature.recomposition)
 
 
     implementation(libs.androidx.core.ktx)
