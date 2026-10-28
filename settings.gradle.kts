@@ -25,6 +25,7 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 rootProject.name = "performance"
 
 include(":app")
+include(":benchmark")
 include(":core:ui")
 
 include(":feature:startup")

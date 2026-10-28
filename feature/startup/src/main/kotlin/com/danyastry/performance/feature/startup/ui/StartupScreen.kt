@@ -31,8 +31,10 @@ import com.danyastry.performance.core.ui.components.SegmentedSelector
 import com.danyastry.performance.core.ui.environment.EnvironmentBanner
 import com.danyastry.performance.feature.startup.R
 import com.danyastry.performance.feature.startup.data.PreferencesStartupStore
+import com.danyastry.performance.feature.startup.data.ProfileStatusReader
 import com.danyastry.performance.feature.startup.model.InitMode
 import com.danyastry.performance.feature.startup.model.ModeStats
+import com.danyastry.performance.feature.startup.model.ProfileStatus
 import com.danyastry.performance.feature.startup.model.StartupSample
 import com.danyastry.performance.feature.startup.restart.RestartActivity
 import com.danyastry.performance.feature.startup.tracking.StartupTracker
@@ -42,7 +44,15 @@ fun StartupRoute(modifier: Modifier = Modifier) {
     val context = LocalContext.current
     val viewModel: StartupViewModel = viewModel(
         factory = viewModelFactory {
-            initializer { StartupViewModel(PreferencesStartupStore(context), StartupTracker.lastLaunch, StartupLibrary.heavy) }
+            initializer {
+                val reader = ProfileStatusReader(context)
+                StartupViewModel(
+                    store = PreferencesStartupStore(context),
+                    lastLaunch = StartupTracker.lastLaunch,
+                    library = StartupLibrary.heavy,
+                    profileStatus = reader::read,
+                )
+            }
         },
     )
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -69,6 +79,7 @@ fun StartupScreen(state: StartupUiState, actions: StartupActions, modifier: Modi
         item { LastLaunchCard(state.lastLaunch) }
         item { ModePicker(state, actions) }
         item { LibraryCard(state, actions) }
+        state.profileStatus?.let { status -> item { ProfileCard(status) } }
         item {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.startup_history), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
@@ -132,6 +143,17 @@ private fun LibraryCard(state: StartupUiState, actions: StartupActions) {
                 )
             }
             OutlinedButton(onClick = actions.onUseLibrary, enabled = !state.usingLibrary) { Text(stringResource(R.string.startup_use_library)) }
+        }
+    }
+}
+
+@Composable
+private fun ProfileCard(status: ProfileStatus) {
+    OutlinedCard(modifier = Modifier.fillMaxWidth()) {
+        Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text(stringResource(R.string.startup_profile_title), style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(status.labelRes), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.SemiBold)
+            Text(stringResource(status.explanationRes), style = MaterialTheme.typography.bodySmall)
         }
     }
 }

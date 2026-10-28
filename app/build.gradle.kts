@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.performance.android.application)
     alias(libs.plugins.performance.android.application.compose)
+    alias(libs.plugins.baselineprofile)
 }
 
 android {
@@ -14,7 +15,9 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            isShrinkResources = true
+            signingConfig = signingConfigs.getByName("debug")
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -29,6 +32,8 @@ dependencies {
 
 
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.profileinstaller)
+    baselineProfile(projects.benchmark)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material3)
