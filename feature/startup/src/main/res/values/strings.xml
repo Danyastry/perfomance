@@ -1,0 +1,26 @@
+<resources>
+    <string name="startup_last_launch">This launch, from process start</string>
+    <string name="startup_no_launch">No cold launch was recorded in this process. Tap Restart and measure.</string>
+    <string name="startup_first_frame">First frame: %1$d ms</string>
+    <string name="startup_application">Application.onCreate finished: %1$d ms</string>
+    <string name="startup_launched_with">Heavy SDK mode: %1$s</string>
+    <string name="startup_mode_title">How the heavy SDK starts</string>
+    <string name="startup_mode_eager">Eager</string>
+    <string name="startup_mode_lazy">Lazy</string>
+    <string name="startup_mode_background">Background</string>
+    <string name="startup_mode_eager_explanation">Initialized in Application.onCreate on the main thread. Every launch waits for it before the first frame.</string>
+    <string name="startup_mode_lazy_explanation">Not started at launch. The first screen that needs it pays the cost instead.</string>
+    <string name="startup_mode_background_explanation">Started on a background thread in Application.onCreate. Launch does not wait, but the work still competes for CPU.</string>
+    <string name="startup_restart">Restart and measure</string>
+    <string name="startup_restart_to_apply">Restart to apply the new mode</string>
+    <string name="startup_library_title">Heavy SDK</string>
+    <string name="startup_library_ready">Initialized</string>
+    <string name="startup_library_not_ready">Not initialized yet</string>
+    <string name="startup_first_use_cost">First use took %1$d ms: the cost lazy init moves out of startup</string>
+    <string name="startup_first_use_free">Already initialized: using it cost %1$d ms</string>
+    <string name="startup_use_library">Use the SDK</string>
+    <string name="startup_history">Cold launches by mode</string>
+    <string name="startup_history_empty">No launches yet. Pick a mode and restart a few times.</string>
+    <string name="startup_clear">Clear</string>
+    <string name="startup_stats">median %1$d ms, best %2$d ms, launches: %3$d</string>
+</resources>
