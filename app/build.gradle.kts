@@ -31,7 +31,7 @@ dependencies {
     implementation(projects.feature.startup)
     implementation(projects.feature.recomposition)
     implementation(projects.feature.scrolling)
-
+    implementation(projects.feature.memory)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.profileinstaller)
@@ -39,4 +39,5 @@ dependencies {
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.material3)
+    debugImplementation(libs.leakcanary.android)
 }
