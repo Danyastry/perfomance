@@ -1,0 +1,21 @@
+<resources>
+    <string name="memory_intro">Both screens below listen to a price feed that lives in a singleton, and each holds an 8 MB buffer. The leaky screen registers itself and never unregisters, so the singleton keeps every closed copy alive. The fixed screen registers in onStart and unregisters in onStop.</string>
+    <string name="memory_open_leaky">Open leaky screen</string>
+    <string name="memory_open_fixed">Open fixed screen</string>
+    <string name="memory_listeners">Listeners in the singleton</string>
+    <string name="memory_heap">Java heap in use</string>
+    <string name="memory_heap_value">%1$d of %2$d MB</string>
+    <string name="memory_retained">Retained objects (LeakCanary)</string>
+    <string name="memory_retained_unavailable">Debug builds only</string>
+    <string name="memory_gc">Run GC</string>
+    <string name="memory_clear">Clear listeners</string>
+    <string name="memory_dump">Dump heap now</string>
+    <string name="memory_how_to_read">Open and close the leaky screen a few times, then run GC: the listener count and the heap grow by about 8 MB per screen. Do the same with the fixed screen and nothing grows. Clear listeners drops the singleton\'s references, so the next GC frees the leaked screens.</string>
+    <string name="memory_leakcanary_note">LeakCanary counts each closed screen as two retained objects, the Activity and its ReportFragment. At five it dumps the heap, restarts the count at zero, and shows the reference chain from PriceUpdates.listeners to the Activity in its notification and in the Leaks app. The analysis runs in this process, so the heap is briefly higher while it works.</string>
+    <string name="memory_leaky_title">Leaky screen</string>
+    <string name="memory_leaky_explanation">This Activity registered itself with the price singleton in onCreate and never unregisters. When you close it, the singleton still points at it, so the Activity, its views and its %1$d MB buffer cannot be collected.</string>
+    <string name="memory_fixed_title">Fixed screen</string>
+    <string name="memory_fixed_explanation">This Activity registers in onStart and unregisters in onStop, so the singleton only holds it while it is visible. When you close it, the Activity and its %1$d MB buffer can be collected.</string>
+    <string name="memory_price">%1$.2f</string>
+    <string name="memory_publish">Publish a new price</string>
+</resources>
