@@ -1,0 +1,16 @@
+<resources>
+    <string name="scrolling_mode_heavy">Heavy</string>
+    <string name="scrolling_mode_optimized">Optimized</string>
+    <string name="scrolling_heavy_explanation">Every row formats its text and decodes a full 2400 by 1600 photo for its thumbnail during composition, on the main thread. There are no keys or content types, so rows cannot be reused well.</string>
+    <string name="scrolling_optimized_explanation">Row text is prepared once on a background thread, thumbnails are decoded at 1/8 size with inSampleSize off the main thread and cached, and rows have keys and content types.</string>
+    <string name="scrolling_frames">Frames while scrolling</string>
+    <string name="scrolling_janky">Missed deadline</string>
+    <string name="scrolling_janky_value">%1$d (%2$d%%)</string>
+    <string name="scrolling_slowest">Slowest frame</string>
+    <string name="scrolling_ms">%1$d ms</string>
+    <string name="scrolling_decimal_ms">%1$.1f ms</string>
+    <string name="scrolling_median">Median frame work</string>
+    <string name="scrolling_p90">90th percentile</string>
+    <string name="scrolling_auto">Auto-scroll</string>
+    <string name="scrolling_reset">Reset</string>
+</resources>

@@ -30,6 +30,7 @@ dependencies {
     implementation(projects.core.ui)
     implementation(projects.feature.startup)
     implementation(projects.feature.recomposition)
+    implementation(projects.feature.scrolling)
 
 
     implementation(libs.androidx.core.ktx)
