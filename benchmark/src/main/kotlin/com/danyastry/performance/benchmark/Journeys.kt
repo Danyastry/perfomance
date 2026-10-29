@@ -26,6 +26,19 @@ fun MacrobenchmarkScope.openScrollingScreen(mode: String) {
     device.wait(Until.hasObject(By.res(FEED_LIST)), WAIT_MILLIS)
 }
 
+fun MacrobenchmarkScope.openMainThreadScreen(background: Boolean) {
+    device.wait(Until.hasObject(By.text("Performance Lab")), WAIT_MILLIS)
+    device.findObject(By.scrollable(true))?.scrollUntil(Direction.DOWN, Until.findObject(By.text(MAIN_THREAD_ENTRY)))
+    device.findObject(By.text(MAIN_THREAD_ENTRY))?.click()
+    device.wait(Until.hasObject(By.text(LOAD_RECEIPT)), WAIT_MILLIS)
+    if (background) device.findObject(By.text("Background"))?.click()
+}
+
+fun MacrobenchmarkScope.loadReceipt() {
+    device.findObject(By.text(LOAD_RECEIPT))?.click()
+    device.wait(Until.hasObject(By.text(WORK_TIME)), LOAD_WAIT_MILLIS)
+}
+
 fun MacrobenchmarkScope.flingFeed() {
     val feed = device.findObject(By.res(FEED_LIST)) ?: return
     feed.setGestureMargin(device.displayWidth / 5)
@@ -37,3 +50,7 @@ fun MacrobenchmarkScope.flingFeed() {
 
 private const val FEED_LIST = "feed_list"
 private const val FLINGS = 4
+private const val MAIN_THREAD_ENTRY = "The same receipt load on and off the main thread, with StrictMode, frame gaps and trace sections"
+private const val LOAD_RECEIPT = "Load receipt"
+private const val WORK_TIME = "Work time"
+private const val LOAD_WAIT_MILLIS = 15_000L

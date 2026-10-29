@@ -1,0 +1,28 @@
+<resources>
+    <string name="mainthread_intro">Loading a receipt reads about 4 MB from disk, parses 120,000 CSV lines and hashes the file. Run it on the main thread and the app cannot draw until it finishes; run it on a worker thread and the main thread stays free. StrictMode watches the main thread while this screen is open.</string>
+    <string name="mainthread_mode_main">Main thread</string>
+    <string name="mainthread_mode_background">Background</string>
+    <string name="mainthread_main_explanation">The click handler reads, parses and hashes the file directly. The spinner stops, frames are skipped, and StrictMode reports the disk access and the slow call.</string>
+    <string name="mainthread_background_explanation">The same work runs in withContext(Dispatchers.Default). The main thread only starts it and shows the result, so the spinner keeps turning and StrictMode stays quiet.</string>
+    <string name="mainthread_load">Load receipt</string>
+    <string name="mainthread_spinner_hint">Freezes when the main thread is busy</string>
+    <string name="mainthread_error">Loading failed: %1$s</string>
+    <string name="mainthread_report_title">Last load: %1$s</string>
+    <string name="mainthread_work">Work time</string>
+    <string name="mainthread_longest_gap">Longest frame gap</string>
+    <string name="mainthread_missed">Missed frames</string>
+    <string name="mainthread_ms">%1$d ms</string>
+    <string name="mainthread_receipt">Lines: %1$d, products: %2$d, total: %3$.2f, SHA-256: %4$s</string>
+    <string name="mainthread_violations_title">StrictMode violations on the main thread: %1$d</string>
+    <string name="mainthread_violations_none">None yet. Load the receipt on the main thread to see some.</string>
+    <string name="mainthread_violation_line">%1$s in %2$s, thread %3$s, count: %4$d</string>
+    <string name="mainthread_origin_unknown">unknown code</string>
+    <string name="mainthread_violation_disk_read">Disk read</string>
+    <string name="mainthread_violation_disk_write">Disk write</string>
+    <string name="mainthread_violation_slow_call">Slow call marked with noteSlowCall</string>
+    <string name="mainthread_violation_network">Network access</string>
+    <string name="mainthread_violation_other">Other violation</string>
+    <string name="mainthread_clear">Clear</string>
+    <string name="mainthread_violations_cap">StrictMode reports at most 10 violations per main thread message. The first load writes the 4 MB file in many small writes, which use them all up, so the slow call only shows from the second load on.</string>
+    <string name="mainthread_trace_hint">Each step is wrapped in a trace section: %1$s, receipt.read, receipt.parse and receipt.checksum. Record a system trace in the Android Studio profiler or with Perfetto and the sections appear on the main thread in one mode and on a DefaultDispatcher worker in the other.</string>
+</resources>
