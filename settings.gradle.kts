@@ -30,3 +30,4 @@ include(":core:ui")
 
 include(":feature:startup")
 include(":feature:recomposition")
+include(":feature:scrolling")
