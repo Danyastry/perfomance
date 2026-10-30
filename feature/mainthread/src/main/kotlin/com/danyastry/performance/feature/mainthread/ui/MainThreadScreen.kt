@@ -36,6 +36,7 @@ import com.danyastry.performance.feature.mainthread.logic.ReceiptLoader
 import com.danyastry.performance.feature.mainthread.logic.ViolationGroups
 import com.danyastry.performance.feature.mainthread.model.LoadMode
 import com.danyastry.performance.feature.mainthread.model.LoadReport
+import com.danyastry.performance.feature.mainthread.model.ParserKind
 import com.danyastry.performance.feature.mainthread.model.ViolationEntry
 import com.danyastry.performance.feature.mainthread.strict.StrictModeWatch
 
@@ -64,6 +65,13 @@ fun MainThreadRoute(modifier: Modifier = Modifier) {
             onSelect = viewModel::onModeChange,
         )
         Text(stringResource(MainThreadLabels.explanation(state.mode)), style = MaterialTheme.typography.bodySmall)
+        SegmentedSelector(
+            options = ParserKind.entries,
+            selected = state.parser,
+            label = { stringResource(MainThreadLabels.parser(it)) },
+            onSelect = viewModel::onParserChange,
+        )
+        Text(stringResource(MainThreadLabels.parserExplanation(state.parser)), style = MaterialTheme.typography.bodySmall)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             Button(
                 onClick = {
@@ -86,7 +94,14 @@ fun MainThreadRoute(modifier: Modifier = Modifier) {
 private fun ReportCard(report: LoadReport) {
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text(stringResource(R.string.mainthread_report_title, stringResource(MainThreadLabels.mode(report.mode))), style = MaterialTheme.typography.titleSmall)
+            Text(
+                stringResource(
+                    R.string.mainthread_report_title,
+                    stringResource(MainThreadLabels.mode(report.mode)),
+                    stringResource(MainThreadLabels.parser(report.parser)),
+                ),
+                style = MaterialTheme.typography.titleSmall,
+            )
             Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
                 Stat(stringResource(R.string.mainthread_work), stringResource(R.string.mainthread_ms, report.workMillis))
                 Stat(stringResource(R.string.mainthread_longest_gap), stringResource(R.string.mainthread_ms, report.frames.longestGapMillis))

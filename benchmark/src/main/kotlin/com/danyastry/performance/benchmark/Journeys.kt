@@ -26,12 +26,13 @@ fun MacrobenchmarkScope.openScrollingScreen(mode: String) {
     device.wait(Until.hasObject(By.res(FEED_LIST)), WAIT_MILLIS)
 }
 
-fun MacrobenchmarkScope.openMainThreadScreen(background: Boolean) {
+fun MacrobenchmarkScope.openMainThreadScreen(background: Boolean, parser: String? = null) {
     device.wait(Until.hasObject(By.text("Performance Lab")), WAIT_MILLIS)
     device.findObject(By.scrollable(true))?.scrollUntil(Direction.DOWN, Until.findObject(By.text(MAIN_THREAD_ENTRY)))
     device.findObject(By.text(MAIN_THREAD_ENTRY))?.click()
     device.wait(Until.hasObject(By.text(LOAD_RECEIPT)), WAIT_MILLIS)
     if (background) device.findObject(By.text("Background"))?.click()
+    if (parser != null) device.findObject(By.text(parser))?.click()
 }
 
 fun MacrobenchmarkScope.loadReceipt() {

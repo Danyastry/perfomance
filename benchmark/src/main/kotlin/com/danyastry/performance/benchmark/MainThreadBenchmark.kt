@@ -24,7 +24,10 @@ class MainThreadBenchmark {
     @Test
     fun loadReceiptInBackground() = load(background = true)
 
-    private fun load(background: Boolean) = rule.measureRepeated(
+    @Test
+    fun loadReceiptOnMainThreadWithIndexScan() = load(background = false, parser = "Index scan")
+
+    private fun load(background: Boolean, parser: String? = null) = rule.measureRepeated(
         packageName = TARGET_PACKAGE,
         metrics = listOf(
             FrameTimingMetric(),
@@ -39,7 +42,7 @@ class MainThreadBenchmark {
         setupBlock = {
             pressHome()
             startActivityAndWait()
-            openMainThreadScreen(background)
+            openMainThreadScreen(background, parser)
         },
     ) {
         loadReceipt()

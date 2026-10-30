@@ -7,8 +7,10 @@ import com.danyastry.performance.feature.mainthread.frames.ChoreographerFrameRec
 import com.danyastry.performance.feature.mainthread.frames.FrameRecorder
 import com.danyastry.performance.feature.mainthread.logic.FrameGapStats
 import com.danyastry.performance.feature.mainthread.logic.ReceiptLoader
+import com.danyastry.performance.feature.mainthread.logic.parse.ReceiptParsers
 import com.danyastry.performance.feature.mainthread.model.LoadMode
 import com.danyastry.performance.feature.mainthread.model.LoadReport
+import com.danyastry.performance.feature.mainthread.model.ParserKind
 import com.danyastry.performance.feature.mainthread.model.ReceiptSummary
 import com.danyastry.performance.feature.mainthread.model.ViolationEntry
 import java.io.File
@@ -25,7 +27,7 @@ import kotlinx.coroutines.withContext
 
 class MainThreadViewModel(
     private val worker: CoroutineDispatcher = Dispatchers.Default,
-    private val loader: (ReceiptFile) -> ReceiptSummary = ReceiptLoader()::load,
+    private val loader: (ReceiptFile, ParserKind) -> ReceiptSummary = { receipt, kind -> ReceiptLoader().load(receipt, ReceiptParsers.of(kind)) },
     private val recorderFactory: () -> FrameRecorder = ::ChoreographerFrameRecorder,
     private val nanoTime: () -> Long = System::nanoTime,
 ) : ViewModel() {
@@ -35,9 +37,12 @@ class MainThreadViewModel(
 
     fun onModeChange(mode: LoadMode) = _state.update { it.copy(mode = mode) }
 
+    fun onParserChange(parser: ParserKind) = _state.update { it.copy(parser = parser) }
+
     fun onLoad(directory: () -> File, frameIntervalNanos: Long) {
         if (_state.value.running) return
         val mode = _state.value.mode
+        val parser = _state.value.parser
         _state.update { it.copy(running = true, error = null) }
         viewModelScope.launch {
             val recorder = recorderFactory()
@@ -46,14 +51,14 @@ class MainThreadViewModel(
                 delay(SETTLE_MILLIS)
                 val start = nanoTime()
                 val summary = when (mode) {
-                    LoadMode.MAIN_THREAD -> loader(ReceiptFile(directory()))
-                    LoadMode.BACKGROUND -> withContext(worker) { loader(ReceiptFile(directory())) }
+                    LoadMode.MAIN_THREAD -> loader(ReceiptFile(directory()), parser)
+                    LoadMode.BACKGROUND -> withContext(worker) { loader(ReceiptFile(directory()), parser) }
                 }
                 val workMillis = (nanoTime() - start) / NANOS_PER_MILLI
                 delay(SETTLE_MILLIS)
                 val frames = FrameGapStats.of(recorder.stop(), frameIntervalNanos)
                 _state.update {
-                    it.copy(runs = it.runs + 1, lastReport = LoadReport(mode, summary, workMillis, frames))
+                    it.copy(runs = it.runs + 1, lastReport = LoadReport(mode, parser, summary, workMillis, frames))
                 }
             } catch (error: Exception) {
                 recorder.stop()
