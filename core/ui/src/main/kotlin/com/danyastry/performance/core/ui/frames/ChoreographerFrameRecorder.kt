@@ -1,8 +1,8 @@
-package com.danyastry.performance.feature.mainthread.frames
+package com.danyastry.performance.core.ui.frames
 
 import android.view.Choreographer
 
-class ChoreographerFrameRecorder : FrameRecorder, Choreographer.FrameCallback {
+class ChoreographerFrameRecorder(private val frameIntervalNanos: Long) : FrameRecorder, Choreographer.FrameCallback {
 
     private val frameTimes = ArrayList<Long>()
     private var recording = false
@@ -13,10 +13,10 @@ class ChoreographerFrameRecorder : FrameRecorder, Choreographer.FrameCallback {
         Choreographer.getInstance().postFrameCallback(this)
     }
 
-    override fun stop(): List<Long> {
+    override fun stop(): FrameGaps {
         recording = false
         Choreographer.getInstance().removeFrameCallback(this)
-        return frameTimes.toList()
+        return FrameGapStats.of(frameTimes, frameIntervalNanos)
     }
 
     override fun doFrame(frameTimeNanos: Long) {

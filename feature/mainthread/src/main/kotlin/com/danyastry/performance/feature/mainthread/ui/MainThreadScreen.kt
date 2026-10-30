@@ -23,7 +23,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -33,7 +32,7 @@ import com.danyastry.performance.core.contract.LabTags
 import com.danyastry.performance.core.contract.TraceSections
 import com.danyastry.performance.core.ui.components.SegmentedSelector
 import com.danyastry.performance.core.ui.environment.EnvironmentBanner
-import com.danyastry.performance.core.ui.frames.FrameGapStats
+import com.danyastry.performance.core.ui.frames.rememberFrameRecorder
 import com.danyastry.performance.feature.mainthread.R
 import com.danyastry.performance.feature.mainthread.logic.ViolationGroups
 import com.danyastry.performance.feature.mainthread.model.LoadMode
@@ -48,7 +47,7 @@ fun MainThreadRoute(modifier: Modifier = Modifier) {
     val viewModel: MainThreadViewModel = viewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    val view = LocalView.current
+    val recorder = rememberFrameRecorder()
     val watch = remember(viewModel) { StrictModeWatch(viewModel::onViolation) }
     DisposableEffect(watch) {
         watch.start()
@@ -78,10 +77,7 @@ fun MainThreadRoute(modifier: Modifier = Modifier) {
         Text(stringResource(MainThreadLabels.parserExplanation(state.parser)), style = MaterialTheme.typography.bodySmall)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             Button(
-                onClick = {
-                    val interval = FrameGapStats.intervalNanos(view.display?.refreshRate ?: 0f)
-                    viewModel.onLoad({ context.cacheDir }, interval)
-                },
+                onClick = { viewModel.onLoad({ context.cacheDir }, recorder) },
                 enabled = !state.running,
                 modifier = Modifier.testTag(LabTags.MAIN_THREAD_LOAD),
             ) { Text(stringResource(R.string.mainthread_load)) }

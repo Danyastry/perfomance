@@ -2,6 +2,7 @@ package com.danyastry.performance.feature.startup.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.danyastry.performance.feature.startup.data.StartupLibrary
 import com.danyastry.performance.feature.startup.data.StartupStore
 import com.danyastry.performance.feature.startup.logic.StartupStats
 import com.danyastry.performance.feature.startup.model.InitMode

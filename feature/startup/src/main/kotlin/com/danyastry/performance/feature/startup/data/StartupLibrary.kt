@@ -1,6 +1,4 @@
-package com.danyastry.performance.feature.startup.ui
-
-import com.danyastry.performance.feature.startup.data.HeavyLibrary
+package com.danyastry.performance.feature.startup.data
 
 interface StartupLibrary {
     fun isReady(): Boolean

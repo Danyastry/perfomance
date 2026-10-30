@@ -15,14 +15,11 @@ class ProfileStatusReader(context: Context) {
     suspend fun read(): ProfileStatus = withContext(Dispatchers.IO) {
         runCatching {
             val status = ProfileVerifier.getCompilationStatusAsync().get()
-            val installed = status.profileInstallResultCode == ProfileVerifier.CompilationStatus.RESULT_CODE_PROFILE_ENQUEUED_FOR_COMPILATION ||
-                status.profileInstallResultCode == ProfileVerifier.CompilationStatus.RESULT_CODE_COMPILED_WITH_PROFILE ||
-                status.profileInstallResultCode == ProfileVerifier.CompilationStatus.RESULT_CODE_COMPILED_WITH_PROFILE_NON_MATCHING
             ProfileStatusMapper.map(
                 debuggable = debuggable,
+                resultCode = status.profileInstallResultCode,
                 compiledWithProfile = status.isCompiledWithProfile,
                 enqueuedForCompilation = status.hasProfileEnqueuedForCompilation(),
-                installedOrPresent = installed,
             )
         }.getOrDefault(ProfileStatus.UNKNOWN)
     }

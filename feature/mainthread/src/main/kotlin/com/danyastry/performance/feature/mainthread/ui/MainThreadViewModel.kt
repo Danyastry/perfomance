@@ -2,10 +2,8 @@ package com.danyastry.performance.feature.mainthread.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.danyastry.performance.core.ui.frames.FrameGapStats
+import com.danyastry.performance.core.ui.frames.FrameRecorder
 import com.danyastry.performance.feature.mainthread.data.ReceiptFile
-import com.danyastry.performance.feature.mainthread.frames.ChoreographerFrameRecorder
-import com.danyastry.performance.feature.mainthread.frames.FrameRecorder
 import com.danyastry.performance.feature.mainthread.logic.ReceiptLoader
 import com.danyastry.performance.feature.mainthread.logic.parse.ReceiptParsers
 import com.danyastry.performance.feature.mainthread.model.LoadMode
@@ -28,7 +26,6 @@ import kotlinx.coroutines.withContext
 class MainThreadViewModel(
     private val worker: CoroutineDispatcher = Dispatchers.Default,
     private val loader: (ReceiptFile, ParserKind) -> ReceiptSummary = { receipt, kind -> ReceiptLoader().load(receipt, ReceiptParsers.of(kind)) },
-    private val recorderFactory: () -> FrameRecorder = ::ChoreographerFrameRecorder,
     private val nanoTime: () -> Long = System::nanoTime,
 ) : ViewModel() {
 
@@ -39,13 +36,12 @@ class MainThreadViewModel(
 
     fun onParserChange(parser: ParserKind) = _state.update { it.copy(parser = parser) }
 
-    fun onLoad(directory: () -> File, frameIntervalNanos: Long) {
+    fun onLoad(directory: () -> File, recorder: FrameRecorder) {
         if (_state.value.running) return
         val mode = _state.value.mode
         val parser = _state.value.parser
         _state.update { it.copy(running = true, error = null) }
         viewModelScope.launch {
-            val recorder = recorderFactory()
             recorder.start()
             try {
                 delay(SETTLE_MILLIS)
@@ -56,7 +52,7 @@ class MainThreadViewModel(
                 }
                 val workMillis = (nanoTime() - start) / NANOS_PER_MILLI
                 delay(SETTLE_MILLIS)
-                val frames = FrameGapStats.of(recorder.stop(), frameIntervalNanos)
+                val frames = recorder.stop()
                 _state.update {
                     it.copy(runs = it.runs + 1, lastReport = LoadReport(mode, parser, summary, workMillis, frames))
                 }
