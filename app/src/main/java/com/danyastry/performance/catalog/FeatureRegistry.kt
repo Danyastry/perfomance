@@ -4,6 +4,7 @@ import com.danyastry.performance.core.ui.FeatureEntry
 import com.danyastry.performance.feature.mainthread.MainThreadFeature
 import com.danyastry.performance.feature.memory.MemoryFeature
 import com.danyastry.performance.feature.recomposition.RecompositionFeature
+import com.danyastry.performance.feature.rendering.PipelineFeature
 import com.danyastry.performance.feature.runtime.GcFeature
 import com.danyastry.performance.feature.runtime.WarmupFeature
 import com.danyastry.performance.feature.scrolling.ScrollingFeature
@@ -18,5 +19,6 @@ object FeatureRegistry {
         MainThreadFeature,
         WarmupFeature,
         GcFeature,
+        PipelineFeature,
     )
 }

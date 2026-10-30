@@ -1,0 +1,32 @@
+<resources>
+    <string name="rendering_ms">%1$.2f ms</string>
+    <string name="rendering_intro">Each frame starts on the UI thread: input, then animation callbacks (where Compose runs composition), then layout and measure, then draw, which only records drawing commands. The RenderThread then syncs that recording, issues the commands to the GPU and swaps buffers. Android reports how long each step took for every frame of this window through FrameMetrics.</string>
+    <string name="rendering_load_none">No extra load</string>
+    <string name="rendering_load_composition">Slow composition</string>
+    <string name="rendering_load_layout">Slow layout</string>
+    <string name="rendering_load_draw">Slow draw</string>
+    <string name="rendering_load_render">Heavy RenderThread work</string>
+    <string name="rendering_load_none_explanation">Only a spinner animates. Its angle is read inside a draw lambda, so each frame redraws it without composition or layout.</string>
+    <string name="rendering_load_composition_explanation">The spinner\'s angle is read in a composable body, so it recomposes every frame and spends %1$d ms there. Compose runs composition from Choreographer\'s animation callback, so it shows up as Animation.</string>
+    <string name="rendering_load_layout_explanation">The angle is read inside a measure lambda, so only layout runs again every frame, and the measure spends %1$d ms. Watch where it lands: in Draw, not in Layout and measure. Compose measures and places its own nodes at the start of the View draw pass, and FrameMetrics only reports Layout and measure when the View system itself asked for a layout.</string>
+    <string name="rendering_load_draw_explanation">The angle is read inside a Canvas, so only drawing runs again every frame, and the draw lambda spends %1$d ms. Draw time here is recording commands on the UI thread, not painting pixels.</string>
+    <string name="rendering_load_render_explanation">Each frame records 4,000 large translucent circles. Recording them is cheap on the UI thread, but the RenderThread has to issue every one and the GPU has to blend them. When the RenderThread falls behind, the UI thread has to wait before it can start the next frame, and that wait shows up as Unknown delay.</string>
+    <string name="rendering_chart_title">Last 60 frames, dashed line at the %1$.1f ms frame budget</string>
+    <string name="rendering_average_title">Average per phase over the recent frames (frames recorded: %1$d)</string>
+    <string name="rendering_gpu_unavailable">GPU time is reported from Android 12 on.</string>
+    <string name="rendering_phase_unknown_delay">Unknown delay</string>
+    <string name="rendering_phase_input">Input</string>
+    <string name="rendering_phase_animation">Animation and composition</string>
+    <string name="rendering_phase_layout">Layout and measure (View system)</string>
+    <string name="rendering_phase_draw">Draw (record)</string>
+    <string name="rendering_phase_sync">Sync</string>
+    <string name="rendering_phase_command_issue">Command issue</string>
+    <string name="rendering_phase_swap_buffers">Swap buffers</string>
+    <string name="rendering_phase_gpu">GPU</string>
+    <string name="rendering_phase_total">Total</string>
+    <string name="rendering_thread_ui">UI thread</string>
+    <string name="rendering_thread_render">RenderThread</string>
+    <string name="rendering_thread_gpu">GPU</string>
+    <string name="rendering_thread_whole_frame">Whole frame</string>
+    <string name="rendering_how_to_read">The bars stack the UI thread and RenderThread phases of each frame. GPU time overlaps them, so it is listed but not stacked. Total covers the whole frame, from the vsync that started it to the buffer swap. Unknown delay is time between vsync and the start of the frame, usually because the UI thread was busy with something else. The meter itself records into fixed arrays on a background thread and updates this card four times a second, so it adds very little to the frames it measures. On the emulator, GPU work is forwarded to the host computer, so Swap buffers, GPU and Total are much larger than on a phone and are not meaningful here; the UI thread phases are.</string>
+</resources>
