@@ -2,6 +2,7 @@ package com.danyastry.performance.feature.mainthread.ui
 
 import com.danyastry.performance.feature.mainthread.frames.FrameRecorder
 import com.danyastry.performance.feature.mainthread.model.LoadMode
+import com.danyastry.performance.feature.mainthread.model.ParserKind
 import com.danyastry.performance.feature.mainthread.model.ReceiptSummary
 import com.danyastry.performance.feature.mainthread.model.ViolationEntry
 import com.danyastry.performance.feature.mainthread.model.ViolationKind
@@ -27,6 +28,7 @@ class MainThreadViewModelTest {
     private val summary = ReceiptSummary(lines = 10, totalCents = 1_000, distinctSkus = 5, checksum = "ab")
     private val loadThreads = mutableListOf<String>()
     private val directoryThreads = mutableListOf<String>()
+    private val parsers = mutableListOf<ParserKind>()
     private val recorder = FakeRecorder()
 
     @Before
@@ -70,6 +72,18 @@ class MainThreadViewModelTest {
     }
 
     @Test
+    fun `the chosen parser is used and reported`() = runTest(main) {
+        val viewModel = viewModel(worker = WorkerDispatcher)
+        viewModel.onParserChange(ParserKind.SCAN)
+
+        viewModel.onLoad(directory, INTERVAL)
+        advanceUntilIdle()
+
+        assertThat(parsers).containsExactly(ParserKind.SCAN)
+        assertThat(viewModel.state.value.lastReport!!.parser).isEqualTo(ParserKind.SCAN)
+    }
+
+    @Test
     fun `a second tap while loading is ignored`() = runTest(main) {
         val viewModel = viewModel(worker = WorkerDispatcher)
 
@@ -84,7 +98,7 @@ class MainThreadViewModelTest {
     fun `a failed load shows the error and stops recording`() = runTest(main) {
         val viewModel = MainThreadViewModel(
             worker = WorkerDispatcher,
-            loader = { error("disk is full") },
+            loader = { _, _ -> error("disk is full") },
             recorderFactory = { recorder },
         )
 
@@ -117,7 +131,8 @@ class MainThreadViewModelTest {
 
     private fun viewModel(worker: CoroutineDispatcher) = MainThreadViewModel(
         worker = worker,
-        loader = {
+        loader = { _, kind ->
+            parsers += kind
             loadThreads += if (WorkerDispatcher.active.get()) "worker" else "main"
             summary
         },

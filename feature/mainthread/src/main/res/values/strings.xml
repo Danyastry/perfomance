@@ -4,10 +4,16 @@
     <string name="mainthread_mode_background">Background</string>
     <string name="mainthread_main_explanation">The click handler reads, parses and hashes the file directly. The spinner stops, frames are skipped, and StrictMode reports the disk access and the slow call.</string>
     <string name="mainthread_background_explanation">The same work runs in withContext(Dispatchers.Default). The main thread only starts it and shows the result, so the spinner keeps turning and StrictMode stays quiet.</string>
+    <string name="mainthread_parser_regex">Regex</string>
+    <string name="mainthread_parser_split">String.split</string>
+    <string name="mainthread_parser_scan">Index scan</string>
+    <string name="mainthread_parser_regex_explanation">Matches every line against a regular expression and copies each field into a new String.</string>
+    <string name="mainthread_parser_split_explanation">Splits every line with String.split, which allocates a list and four Strings per line.</string>
+    <string name="mainthread_parser_scan_explanation">Walks the characters by index, parses numbers in place and remembers products as offsets into the text, so it allocates nothing per line.</string>
     <string name="mainthread_load">Load receipt</string>
     <string name="mainthread_spinner_hint">Freezes when the main thread is busy</string>
     <string name="mainthread_error">Loading failed: %1$s</string>
-    <string name="mainthread_report_title">Last load: %1$s</string>
+    <string name="mainthread_report_title">Last load: %1$s, %2$s parser</string>
     <string name="mainthread_work">Work time</string>
     <string name="mainthread_longest_gap">Longest frame gap</string>
     <string name="mainthread_missed">Missed frames</string>

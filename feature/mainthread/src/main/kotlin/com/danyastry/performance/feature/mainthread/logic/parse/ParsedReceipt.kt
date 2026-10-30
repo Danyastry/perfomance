@@ -1,4 +1,4 @@
-package com.danyastry.performance.feature.mainthread.logic
+package com.danyastry.performance.feature.mainthread.logic.parse
 
 data class ParsedReceipt(
     val lines: Int,

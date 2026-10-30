@@ -1,6 +1,8 @@
 package com.danyastry.performance.feature.mainthread.logic
 
 import com.danyastry.performance.feature.mainthread.data.ReceiptFile
+import com.danyastry.performance.feature.mainthread.logic.parse.ScanningReceiptParser
+import com.danyastry.performance.feature.mainthread.logic.parse.SplitReceiptParser
 import com.google.common.truth.Truth.assertThat
 import org.junit.Rule
 import org.junit.Test
@@ -20,11 +22,19 @@ class ReceiptLoaderTest {
         val summary = loader.load(receipt)
 
         val bytes = receipt.file.readBytes()
-        val parsed = ReceiptParser.parse(bytes.decodeToString())
+        val parsed = SplitReceiptParser.parse(bytes.decodeToString())
         assertThat(summary.lines).isEqualTo(1_000)
         assertThat(summary.totalCents).isEqualTo(parsed.totalCents)
         assertThat(summary.distinctSkus).isEqualTo(1_000)
         assertThat(summary.checksum).isEqualTo(ReceiptChecksum.of(bytes, rounds = 1))
         assertThat(slowCalls).containsExactly(ReceiptLoader.SECTION_CHECKSUM)
+    }
+
+    @Test
+    fun `the chosen parser does the parsing`() {
+        val receipt = ReceiptFile(folder.root, lines = 500)
+        val loader = ReceiptLoader(checksumRounds = 1, noteSlowCall = {})
+
+        assertThat(loader.load(receipt, ScanningReceiptParser)).isEqualTo(loader.load(receipt, SplitReceiptParser))
     }
 }

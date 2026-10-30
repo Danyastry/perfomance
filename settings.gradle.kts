@@ -26,6 +26,7 @@ rootProject.name = "performance"
 
 include(":app")
 include(":benchmark")
+include(":microbenchmark")
 include(":core:ui")
 
 include(":feature:startup")
