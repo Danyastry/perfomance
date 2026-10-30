@@ -24,15 +24,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.danyastry.performance.core.contract.LabTags
+import com.danyastry.performance.core.contract.TraceSections
 import com.danyastry.performance.core.ui.components.SegmentedSelector
 import com.danyastry.performance.core.ui.environment.EnvironmentBanner
 import com.danyastry.performance.core.ui.frames.FrameGapStats
 import com.danyastry.performance.feature.mainthread.R
-import com.danyastry.performance.feature.mainthread.logic.ReceiptLoader
 import com.danyastry.performance.feature.mainthread.logic.ViolationGroups
 import com.danyastry.performance.feature.mainthread.model.LoadMode
 import com.danyastry.performance.feature.mainthread.model.LoadReport
@@ -63,6 +65,7 @@ fun MainThreadRoute(modifier: Modifier = Modifier) {
             selected = state.mode,
             label = { stringResource(MainThreadLabels.mode(it)) },
             onSelect = viewModel::onModeChange,
+            tag = { if (it == LoadMode.MAIN_THREAD) LabTags.MAIN_THREAD_ON_MAIN else LabTags.MAIN_THREAD_IN_BACKGROUND },
         )
         Text(stringResource(MainThreadLabels.explanation(state.mode)), style = MaterialTheme.typography.bodySmall)
         SegmentedSelector(
@@ -70,6 +73,7 @@ fun MainThreadRoute(modifier: Modifier = Modifier) {
             selected = state.parser,
             label = { stringResource(MainThreadLabels.parser(it)) },
             onSelect = viewModel::onParserChange,
+            tag = MainThreadLabels::parserTag,
         )
         Text(stringResource(MainThreadLabels.parserExplanation(state.parser)), style = MaterialTheme.typography.bodySmall)
         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -79,6 +83,7 @@ fun MainThreadRoute(modifier: Modifier = Modifier) {
                     viewModel.onLoad({ context.cacheDir }, interval)
                 },
                 enabled = !state.running,
+                modifier = Modifier.testTag(LabTags.MAIN_THREAD_LOAD),
             ) { Text(stringResource(R.string.mainthread_load)) }
             CircularProgressIndicator(modifier = Modifier.size(32.dp))
             Text(stringResource(R.string.mainthread_spinner_hint), style = MaterialTheme.typography.labelSmall)
@@ -86,13 +91,13 @@ fun MainThreadRoute(modifier: Modifier = Modifier) {
         state.error?.let { Text(stringResource(R.string.mainthread_error, it), color = MaterialTheme.colorScheme.error) }
         state.lastReport?.let { ReportCard(it) }
         ViolationsCard(state.violations, viewModel::onClearViolations)
-        Text(stringResource(R.string.mainthread_trace_hint, ReceiptLoader.SECTION_LOAD), style = MaterialTheme.typography.bodySmall)
+        Text(stringResource(R.string.mainthread_trace_hint, TraceSections.RECEIPT_LOAD), style = MaterialTheme.typography.bodySmall)
     }
 }
 
 @Composable
 private fun ReportCard(report: LoadReport) {
-    Card(modifier = Modifier.fillMaxWidth()) {
+    Card(modifier = Modifier.fillMaxWidth().testTag(LabTags.MAIN_THREAD_REPORT)) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(
                 stringResource(

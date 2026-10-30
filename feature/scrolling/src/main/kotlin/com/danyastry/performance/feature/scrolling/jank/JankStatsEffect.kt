@@ -5,6 +5,7 @@ import android.content.Context
 import android.content.ContextWrapper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
@@ -20,12 +21,15 @@ fun JankStatsEffect(active: Boolean, counter: JankCounter) {
         val stats = window?.let {
             JankStats.createAndTrack(it) { frame ->
                 if (currentActive) {
-                    val overrun = (frame as? FrameDataApi31)?.frameOverrunNanos
-                    counter.record(frame.frameDurationUiNanos, isJank = overrun?.let { nanos -> nanos > 0 } ?: frame.isJank)
+                    val overrun = if (frame is FrameDataApi31) frame.frameOverrunNanos else JankCounter.NO_OVERRUN
+                    counter.record(frame.frameDurationUiNanos, overrun, frame.isJank)
                 }
             }
         }
         onDispose { stats?.isTrackingEnabled = false }
+    }
+    LaunchedEffect(active, counter) {
+        if (!active) counter.flush()
     }
 }
 

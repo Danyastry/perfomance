@@ -1,5 +1,6 @@
 package com.danyastry.performance.feature.mainthread.logic
 
+import com.danyastry.performance.core.contract.TraceSections
 import com.danyastry.performance.feature.mainthread.data.ReceiptFile
 import com.danyastry.performance.feature.mainthread.logic.parse.ScanningReceiptParser
 import com.danyastry.performance.feature.mainthread.logic.parse.SplitReceiptParser
@@ -27,7 +28,7 @@ class ReceiptLoaderTest {
         assertThat(summary.totalCents).isEqualTo(parsed.totalCents)
         assertThat(summary.distinctSkus).isEqualTo(1_000)
         assertThat(summary.checksum).isEqualTo(ReceiptChecksum.of(bytes, rounds = 1))
-        assertThat(slowCalls).containsExactly(ReceiptLoader.SECTION_CHECKSUM)
+        assertThat(slowCalls).containsExactly(TraceSections.RECEIPT_CHECKSUM)
     }
 
     @Test

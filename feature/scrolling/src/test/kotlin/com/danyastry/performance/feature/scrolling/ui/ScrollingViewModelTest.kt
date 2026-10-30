@@ -37,7 +37,7 @@ class ScrollingViewModelTest {
     @Test
     fun `changing mode resets the jank meter`() = runTest {
         val viewModel = ScrollingViewModel(UnconfinedTestDispatcher(testScheduler), loadImage = { ByteArray(3) })
-        viewModel.counter.record(40_000_000, isJank = true)
+        viewModel.counter.record(40_000_000, overrunNanos = 20_000_000, isJank = true)
 
         viewModel.onModeChange(ListMode.OPTIMIZED)
 

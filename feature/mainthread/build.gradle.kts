@@ -7,5 +7,6 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.contract)
     implementation(libs.androidx.tracing.ktx)
 }

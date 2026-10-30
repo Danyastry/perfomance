@@ -7,6 +7,8 @@ import androidx.benchmark.macro.StartupMode
 import androidx.benchmark.macro.TraceSectionMetric
 import androidx.benchmark.macro.junit4.MacrobenchmarkRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.danyastry.performance.core.contract.LabTags
+import com.danyastry.performance.core.contract.TraceSections
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -19,30 +21,24 @@ class MainThreadBenchmark {
     val rule = MacrobenchmarkRule()
 
     @Test
-    fun loadReceiptOnMainThread() = load(background = false)
+    fun loadReceiptOnMainThread() = load(LabTags.MAIN_THREAD_ON_MAIN, LabTags.PARSER_SPLIT)
 
     @Test
-    fun loadReceiptInBackground() = load(background = true)
+    fun loadReceiptInBackground() = load(LabTags.MAIN_THREAD_IN_BACKGROUND, LabTags.PARSER_SPLIT)
 
     @Test
-    fun loadReceiptOnMainThreadWithIndexScan() = load(background = false, parser = "Index scan")
+    fun loadReceiptOnMainThreadWithIndexScan() = load(LabTags.MAIN_THREAD_ON_MAIN, LabTags.PARSER_SCAN)
 
-    private fun load(background: Boolean, parser: String? = null) = rule.measureRepeated(
+    private fun load(modeTag: String, parserTag: String) = rule.measureRepeated(
         packageName = TARGET_PACKAGE,
-        metrics = listOf(
-            FrameTimingMetric(),
-            TraceSectionMetric("receipt.load"),
-            TraceSectionMetric("receipt.read"),
-            TraceSectionMetric("receipt.parse"),
-            TraceSectionMetric("receipt.checksum"),
-        ),
+        metrics = listOf(FrameTimingMetric()) + TraceSections.RECEIPT.map { TraceSectionMetric(it) },
         compilationMode = CompilationMode.Partial(),
         startupMode = StartupMode.WARM,
         iterations = ITERATIONS,
         setupBlock = {
             pressHome()
             startActivityAndWait()
-            openMainThreadScreen(background, parser)
+            openMainThreadScreen(modeTag, parserTag)
         },
     ) {
         loadReceipt()

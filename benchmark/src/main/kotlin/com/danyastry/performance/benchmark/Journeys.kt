@@ -2,46 +2,43 @@ package com.danyastry.performance.benchmark
 
 import androidx.benchmark.macro.MacrobenchmarkScope
 import androidx.test.uiautomator.By
+import androidx.test.uiautomator.BySelector
 import androidx.test.uiautomator.Direction
+import androidx.test.uiautomator.UiDevice
+import androidx.test.uiautomator.UiObject2
 import androidx.test.uiautomator.Until
+import com.danyastry.performance.core.contract.LabIds
+import com.danyastry.performance.core.contract.LabTags
 
 const val TARGET_PACKAGE = "com.danyastry.performance"
 private const val WAIT_MILLIS = 5_000L
+private const val LOAD_WAIT_MILLIS = 15_000L
+private const val FLINGS = 4
 
 fun MacrobenchmarkScope.waitForCatalog() {
-    device.wait(Until.hasObject(By.text("Performance Lab")), WAIT_MILLIS)
+    device.require(By.res(LabTags.CATALOG_LIST), "the catalog list")
+}
+
+fun MacrobenchmarkScope.openLab(labId: String) {
+    val list = device.require(By.res(LabTags.CATALOG_LIST), "the catalog list")
+    val row = By.res(LabTags.catalogRow(labId))
+    if (!device.hasObject(row)) list.scrollUntil(Direction.DOWN, Until.findObject(row))
+    device.require(row, "the catalog row for $labId").click()
 }
 
 fun MacrobenchmarkScope.openColdStartScreen() {
-    device.wait(Until.hasObject(By.text("Cold start")), WAIT_MILLIS)
-    device.findObject(By.text("Cold start"))?.click()
-    device.wait(Until.hasObject(By.text("Restart and measure")), WAIT_MILLIS)
+    openLab(LabIds.COLD_START)
+    device.require(By.res(LabTags.COLD_START_RESTART), "the restart button")
 }
 
-fun MacrobenchmarkScope.openScrollingScreen(mode: String) {
-    device.wait(Until.hasObject(By.text("List scrolling")), WAIT_MILLIS)
-    device.findObject(By.text("List scrolling"))?.click()
-    device.wait(Until.hasObject(By.text(mode)), WAIT_MILLIS)
-    device.findObject(By.text(mode))?.click()
-    device.wait(Until.hasObject(By.res(FEED_LIST)), WAIT_MILLIS)
-}
-
-fun MacrobenchmarkScope.openMainThreadScreen(background: Boolean, parser: String? = null) {
-    device.wait(Until.hasObject(By.text("Performance Lab")), WAIT_MILLIS)
-    device.findObject(By.scrollable(true))?.scrollUntil(Direction.DOWN, Until.findObject(By.text(MAIN_THREAD_ENTRY)))
-    device.findObject(By.text(MAIN_THREAD_ENTRY))?.click()
-    device.wait(Until.hasObject(By.text(LOAD_RECEIPT)), WAIT_MILLIS)
-    if (background) device.findObject(By.text("Background"))?.click()
-    if (parser != null) device.findObject(By.text(parser))?.click()
-}
-
-fun MacrobenchmarkScope.loadReceipt() {
-    device.findObject(By.text(LOAD_RECEIPT))?.click()
-    device.wait(Until.hasObject(By.text(WORK_TIME)), LOAD_WAIT_MILLIS)
+fun MacrobenchmarkScope.openScrollingScreen(modeTag: String) {
+    openLab(LabIds.LIST_SCROLLING)
+    device.require(By.res(modeTag), "the scrolling mode $modeTag").click()
+    device.require(By.res(LabTags.FEED_LIST), "the feed")
 }
 
 fun MacrobenchmarkScope.flingFeed() {
-    val feed = device.findObject(By.res(FEED_LIST)) ?: return
+    val feed = device.require(By.res(LabTags.FEED_LIST), "the feed")
     feed.setGestureMargin(device.displayWidth / 5)
     repeat(FLINGS) {
         feed.fling(Direction.DOWN)
@@ -49,9 +46,18 @@ fun MacrobenchmarkScope.flingFeed() {
     }
 }
 
-private const val FEED_LIST = "feed_list"
-private const val FLINGS = 4
-private const val MAIN_THREAD_ENTRY = "The same receipt load on and off the main thread, with StrictMode, frame gaps and trace sections"
-private const val LOAD_RECEIPT = "Load receipt"
-private const val WORK_TIME = "Work time"
-private const val LOAD_WAIT_MILLIS = 15_000L
+fun MacrobenchmarkScope.openMainThreadScreen(modeTag: String, parserTag: String) {
+    openLab(LabIds.MAIN_THREAD)
+    device.require(By.res(modeTag), "the load mode $modeTag").click()
+    device.require(By.res(parserTag), "the parser $parserTag").click()
+    device.require(By.res(LabTags.MAIN_THREAD_LOAD), "the load button")
+}
+
+fun MacrobenchmarkScope.loadReceipt() {
+    check(!device.hasObject(By.res(LabTags.MAIN_THREAD_REPORT))) { "A load report is already on screen before loading" }
+    device.require(By.res(LabTags.MAIN_THREAD_LOAD), "the load button").click()
+    device.require(By.res(LabTags.MAIN_THREAD_REPORT), "the load report", LOAD_WAIT_MILLIS)
+}
+
+private fun UiDevice.require(selector: BySelector, what: String, timeoutMillis: Long = WAIT_MILLIS): UiObject2 =
+    wait(Until.findObject(selector), timeoutMillis) ?: throw AssertionError("Could not find $what within $timeoutMillis ms")

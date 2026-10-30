@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.contract)
     implementation(libs.androidx.metrics.performance)
     implementation(libs.androidx.core.ktx)
 }

@@ -5,6 +5,7 @@ import androidx.benchmark.macro.FrameTimingMetric
 import androidx.benchmark.macro.StartupMode
 import androidx.benchmark.macro.junit4.MacrobenchmarkRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
+import com.danyastry.performance.core.contract.LabTags
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -16,12 +17,12 @@ class ScrollBenchmark {
     val rule = MacrobenchmarkRule()
 
     @Test
-    fun scrollHeavyFeed() = scroll("Heavy")
+    fun scrollHeavyFeed() = scroll(LabTags.SCROLLING_HEAVY)
 
     @Test
-    fun scrollOptimizedFeed() = scroll("Optimized")
+    fun scrollOptimizedFeed() = scroll(LabTags.SCROLLING_OPTIMIZED)
 
-    private fun scroll(mode: String) = rule.measureRepeated(
+    private fun scroll(modeTag: String) = rule.measureRepeated(
         packageName = TARGET_PACKAGE,
         metrics = listOf(FrameTimingMetric()),
         compilationMode = CompilationMode.Partial(),
@@ -30,8 +31,7 @@ class ScrollBenchmark {
         setupBlock = {
             pressHome()
             startActivityAndWait()
-            waitForCatalog()
-            openScrollingScreen(mode)
+            openScrollingScreen(modeTag)
         },
     ) {
         flingFeed()

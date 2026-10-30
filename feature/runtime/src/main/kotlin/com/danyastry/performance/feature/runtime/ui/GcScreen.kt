@@ -15,12 +15,8 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.PointMode
@@ -37,8 +33,6 @@ import com.danyastry.performance.core.ui.components.SegmentedSelector
 import com.danyastry.performance.core.ui.environment.EnvironmentBanner
 import com.danyastry.performance.core.ui.frames.FrameGapStats
 import com.danyastry.performance.feature.runtime.R
-import com.danyastry.performance.feature.runtime.logic.AllocatingParticleField
-import com.danyastry.performance.feature.runtime.logic.PackedParticleField
 import com.danyastry.performance.feature.runtime.model.GcCounters
 import com.danyastry.performance.feature.runtime.model.GcMode
 import com.danyastry.performance.feature.runtime.model.GcReport
@@ -48,32 +42,12 @@ fun GcRoute(modifier: Modifier = Modifier) {
     val viewModel: GcViewModel = viewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
     val view = LocalView.current
-    val allocating = remember { AllocatingParticleField(PARTICLES, SEED) }
-    val packed = remember { PackedParticleField(PARTICLES, SEED) }
-    var frame by remember { mutableLongStateOf(0L) }
-    LaunchedEffect(state.running) {
-        if (!state.running) return@LaunchedEffect
-        val field = if (state.mode == GcMode.ALLOCATE) allocating else packed
-        val frames = ArrayList<Long>(FRAMES_CAPACITY)
-        val first = withFrameNanos { it }
-        frames += first
-        var previous = first
-        while (previous - first < RUN_NANOS) {
-            previous = withFrameNanos { now ->
-                field.step(((now - previous) / NANOS_PER_SECOND).toFloat())
-                frame = now
-                now
-            }
-            frames += previous
-        }
-        viewModel.onFinished(PARTICLES, frames, FrameGapStats.intervalNanos(view.display?.refreshRate ?: 0f))
-    }
     Column(
         modifier = modifier.verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         EnvironmentBanner()
-        Text(stringResource(R.string.runtime_gc_intro, PARTICLES), style = MaterialTheme.typography.bodyMedium)
+        Text(stringResource(R.string.runtime_gc_intro, viewModel.particles), style = MaterialTheme.typography.bodyMedium)
         SegmentedSelector(
             options = GcMode.entries,
             selected = state.mode,
@@ -84,9 +58,12 @@ fun GcRoute(modifier: Modifier = Modifier) {
             stringResource(if (state.mode == GcMode.ALLOCATE) R.string.runtime_gc_allocate_explanation else R.string.runtime_gc_reuse_explanation),
             style = MaterialTheme.typography.bodySmall,
         )
-        ParticleCanvas(state.mode, allocating, packed, frame)
-        Button(onClick = viewModel::onStart, enabled = !state.running) {
-            Text(stringResource(R.string.runtime_gc_run, RUN_SECONDS))
+        ParticleCanvas(state.mode, viewModel)
+        Button(
+            onClick = { viewModel.onStart(FrameGapStats.intervalNanos(view.display?.refreshRate ?: 0f)) },
+            enabled = !state.running,
+        ) {
+            Text(stringResource(R.string.runtime_gc_run, GcViewModel.RUN_SECONDS))
         }
         if (state.running) CountersCard(stringResource(R.string.runtime_gc_live), state.live, null)
         state.report?.let { CountersCard(reportTitle(it), it.counters, it) }
@@ -95,7 +72,10 @@ fun GcRoute(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun ParticleCanvas(mode: GcMode, allocating: AllocatingParticleField, packed: PackedParticleField, frame: Long) {
+private fun ParticleCanvas(mode: GcMode, viewModel: GcViewModel) {
+    val allocating = viewModel.allocating
+    val packed = viewModel.packed
+    val frame = viewModel.frame
     val color = MaterialTheme.colorScheme.primary
     val paint = remember(color) {
         Paint().apply {
@@ -105,10 +85,10 @@ private fun ParticleCanvas(mode: GcMode, allocating: AllocatingParticleField, pa
             isAntiAlias = true
         }
     }
-    val scaled = remember { FloatArray(PARTICLES * 2) }
+    val scaled = remember(packed) { FloatArray(packed.count * 2) }
     Card(modifier = Modifier.fillMaxWidth()) {
         Canvas(Modifier.fillMaxWidth().aspectRatio(CANVAS_RATIO).padding(8.dp)) {
-            frame
+            frame.value
             when (mode) {
                 GcMode.ALLOCATE -> drawPoints(
                     points = allocating.particles.map { Offset(it.x * size.width, it.y * size.height) },
@@ -119,7 +99,7 @@ private fun ParticleCanvas(mode: GcMode, allocating: AllocatingParticleField, pa
                 )
                 GcMode.REUSE -> {
                     val points = packed.points
-                    for (index in 0 until PARTICLES) {
+                    for (index in 0 until packed.count) {
                         scaled[index * 2] = points[index * 2] * size.width
                         scaled[index * 2 + 1] = points[index * 2 + 1] * size.height
                     }
@@ -165,12 +145,6 @@ private fun CountersCard(title: String, counters: GcCounters, report: GcReport?)
     }
 }
 
-private const val PARTICLES = 5_000
-private const val SEED = 42
-private const val RUN_SECONDS = 10
-private const val RUN_NANOS = RUN_SECONDS * 1_000_000_000L
-private const val NANOS_PER_SECOND = 1_000_000_000.0
-private const val FRAMES_CAPACITY = 1_300
 private const val POINT_SIZE = 6f
 private const val CANVAS_RATIO = 1.5f
 private const val BYTES_PER_MB = 1024.0 * 1024.0
