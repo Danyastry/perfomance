@@ -1,10 +1,14 @@
 package com.danyastry.performance.feature.startup.ui
 
+import com.danyastry.performance.feature.startup.data.StartupLibrary
 import com.danyastry.performance.feature.startup.data.StartupStore
 import com.danyastry.performance.feature.startup.model.InitMode
 import com.danyastry.performance.feature.startup.model.ProfileStatus
 import com.danyastry.performance.feature.startup.model.StartupSample
 import com.google.common.truth.Truth.assertThat
+import org.junit.After
+import org.junit.Before
+import org.junit.Test
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,9 +18,6 @@ import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
-import org.junit.After
-import org.junit.Before
-import org.junit.Test
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class StartupViewModelTest {

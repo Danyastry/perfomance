@@ -1,6 +1,7 @@
 package com.danyastry.performance.feature.mainthread.ui
 
-import com.danyastry.performance.feature.mainthread.frames.FrameRecorder
+import com.danyastry.performance.core.ui.frames.FrameGaps
+import com.danyastry.performance.core.ui.frames.FrameRecorder
 import com.danyastry.performance.feature.mainthread.model.LoadMode
 import com.danyastry.performance.feature.mainthread.model.ParserKind
 import com.danyastry.performance.feature.mainthread.model.ReceiptSummary
@@ -45,7 +46,7 @@ class MainThreadViewModelTest {
     fun `main thread mode runs the work on the main dispatcher`() = runTest(main) {
         val viewModel = viewModel(worker = WorkerDispatcher)
 
-        viewModel.onLoad(directory, INTERVAL)
+        viewModel.onLoad(directory, recorder)
         advanceUntilIdle()
 
         assertThat(loadThreads).containsExactly("main")
@@ -53,7 +54,8 @@ class MainThreadViewModelTest {
         val report = viewModel.state.value.lastReport!!
         assertThat(report.mode).isEqualTo(LoadMode.MAIN_THREAD)
         assertThat(report.summary).isEqualTo(summary)
-        assertThat(report.frames.missedFrames).isEqualTo(29)
+        assertThat(report.frames).isEqualTo(FrameGaps(frames = 3, longestGapMillis = 500, missedFrames = 29))
+        assertThat(recorder.started).isTrue()
         assertThat(viewModel.state.value.running).isFalse()
         assertThat(viewModel.state.value.runs).isEqualTo(1)
     }
@@ -63,7 +65,7 @@ class MainThreadViewModelTest {
         val viewModel = viewModel(worker = WorkerDispatcher)
         viewModel.onModeChange(LoadMode.BACKGROUND)
 
-        viewModel.onLoad(directory, INTERVAL)
+        viewModel.onLoad(directory, recorder)
         advanceUntilIdle()
 
         assertThat(loadThreads).containsExactly("worker")
@@ -76,7 +78,7 @@ class MainThreadViewModelTest {
         val viewModel = viewModel(worker = WorkerDispatcher)
         viewModel.onParserChange(ParserKind.SCAN)
 
-        viewModel.onLoad(directory, INTERVAL)
+        viewModel.onLoad(directory, recorder)
         advanceUntilIdle()
 
         assertThat(parsers).containsExactly(ParserKind.SCAN)
@@ -87,8 +89,8 @@ class MainThreadViewModelTest {
     fun `a second tap while loading is ignored`() = runTest(main) {
         val viewModel = viewModel(worker = WorkerDispatcher)
 
-        viewModel.onLoad(directory, INTERVAL)
-        viewModel.onLoad(directory, INTERVAL)
+        viewModel.onLoad(directory, recorder)
+        viewModel.onLoad(directory, recorder)
         advanceUntilIdle()
 
         assertThat(loadThreads).hasSize(1)
@@ -99,10 +101,9 @@ class MainThreadViewModelTest {
         val viewModel = MainThreadViewModel(
             worker = WorkerDispatcher,
             loader = { _, _ -> error("disk is full") },
-            recorderFactory = { recorder },
         )
 
-        viewModel.onLoad(directory, INTERVAL)
+        viewModel.onLoad(directory, recorder)
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.error).isEqualTo("disk is full")
@@ -136,17 +137,19 @@ class MainThreadViewModelTest {
             loadThreads += if (WorkerDispatcher.active.get()) "worker" else "main"
             summary
         },
-        recorderFactory = { recorder },
     )
 
     private class FakeRecorder : FrameRecorder {
+        var started = false
         var stopped = false
 
-        override fun start() = Unit
+        override fun start() {
+            started = true
+        }
 
-        override fun stop(): List<Long> {
+        override fun stop(): FrameGaps {
             stopped = true
-            return listOf(0L, INTERVAL, INTERVAL + 500_000_000L)
+            return FrameGaps(frames = 3, longestGapMillis = 500, missedFrames = 29)
         }
     }
 
@@ -163,7 +166,4 @@ class MainThreadViewModelTest {
         }
     }
 
-    private companion object {
-        const val INTERVAL = 16_666_667L
-    }
 }

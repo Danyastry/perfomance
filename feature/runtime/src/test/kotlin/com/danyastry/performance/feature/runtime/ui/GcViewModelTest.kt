@@ -1,6 +1,8 @@
 package com.danyastry.performance.feature.runtime.ui
 
 import androidx.compose.runtime.MonotonicFrameClock
+import com.danyastry.performance.core.ui.frames.FrameGaps
+import com.danyastry.performance.core.ui.frames.FrameRecorder
 import com.danyastry.performance.feature.runtime.model.GcCounters
 import com.danyastry.performance.feature.runtime.model.GcMode
 import com.google.common.truth.Truth.assertThat
@@ -21,6 +23,7 @@ class GcViewModelTest {
 
     private val main = StandardTestDispatcher()
     private val clock = FakeFrameClock()
+    private val recorder = FakeRecorder()
     private var reads = 0
 
     @Before
@@ -37,15 +40,16 @@ class GcViewModelTest {
     fun `a run measures every frame for its whole length and reports the counter deltas`() = runTest(main) {
         val viewModel = viewModel()
 
-        viewModel.onStart(INTERVAL)
+        viewModel.onStart(recorder)
         advanceUntilIdle()
 
         val report = viewModel.state.value.report!!
         assertThat(report.mode).isEqualTo(GcMode.ALLOCATE)
         assertThat(report.particles).isEqualTo(PARTICLES)
         assertThat(report.seconds).isWithin(0.02).of(1.0)
-        assertThat(report.frames.frames).isEqualTo(clock.frames)
-        assertThat(report.frames.missedFrames).isEqualTo(0)
+        assertThat(report.frames).isEqualTo(RECORDED)
+        assertThat(recorder.events).containsExactly("start", "stop").inOrder()
+        assertThat(clock.frames).isAtLeast(60)
         assertThat(report.counters).isEqualTo(GcCounters(gcCount = 2, gcTimeMillis = 20, blockingGcCount = 0, blockingGcTimeMillis = 0, bytesAllocated = 2 * MB))
         assertThat(report.megabytesPerSecond).isWithin(0.05).of(2.0)
         assertThat(viewModel.state.value.running).isFalse()
@@ -58,7 +62,7 @@ class GcViewModelTest {
         val before = viewModel.packed.x(0)
         val allocatingBefore = viewModel.allocating.x(0)
 
-        viewModel.onStart(INTERVAL)
+        viewModel.onStart(recorder)
         advanceUntilIdle()
 
         assertThat(viewModel.packed.x(0)).isNotEqualTo(before)
@@ -71,9 +75,9 @@ class GcViewModelTest {
     fun `a second start and a mode change during a run are ignored`() = runTest(main) {
         val viewModel = viewModel()
 
-        viewModel.onStart(INTERVAL)
+        viewModel.onStart(recorder)
         viewModel.onModeChange(GcMode.REUSE)
-        viewModel.onStart(INTERVAL)
+        viewModel.onStart(recorder)
         advanceUntilIdle()
 
         assertThat(viewModel.state.value.mode).isEqualTo(GcMode.ALLOCATE)
@@ -89,6 +93,19 @@ class GcViewModelTest {
         runNanos = SECOND,
         particles = PARTICLES,
     )
+
+    private class FakeRecorder : FrameRecorder {
+        val events = mutableListOf<String>()
+
+        override fun start() {
+            events += "start"
+        }
+
+        override fun stop(): FrameGaps {
+            events += "stop"
+            return RECORDED
+        }
+    }
 
     private class FakeFrameClock : MonotonicFrameClock {
         var time = 0L
@@ -107,5 +124,6 @@ class GcViewModelTest {
         const val MB = 1024L * 1024L
         const val INTERVAL = 16_666_667L
         const val SECOND = 1_000_000_000L
+        val RECORDED = FrameGaps(frames = 61, longestGapMillis = 17, missedFrames = 0)
     }
 }

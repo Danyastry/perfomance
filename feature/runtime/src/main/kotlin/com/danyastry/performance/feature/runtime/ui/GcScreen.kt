@@ -24,14 +24,13 @@ import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.drawIntoCanvas
 import androidx.compose.ui.graphics.nativeCanvas
 import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.danyastry.performance.core.ui.components.SegmentedSelector
 import com.danyastry.performance.core.ui.environment.EnvironmentBanner
-import com.danyastry.performance.core.ui.frames.FrameGapStats
+import com.danyastry.performance.core.ui.frames.rememberFrameRecorder
 import com.danyastry.performance.feature.runtime.R
 import com.danyastry.performance.feature.runtime.model.GcCounters
 import com.danyastry.performance.feature.runtime.model.GcMode
@@ -41,7 +40,7 @@ import com.danyastry.performance.feature.runtime.model.GcReport
 fun GcRoute(modifier: Modifier = Modifier) {
     val viewModel: GcViewModel = viewModel()
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val view = LocalView.current
+    val recorder = rememberFrameRecorder()
     Column(
         modifier = modifier.verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -60,7 +59,7 @@ fun GcRoute(modifier: Modifier = Modifier) {
         )
         ParticleCanvas(state.mode, viewModel)
         Button(
-            onClick = { viewModel.onStart(FrameGapStats.intervalNanos(view.display?.refreshRate ?: 0f)) },
+            onClick = { viewModel.onStart(recorder) },
             enabled = !state.running,
         ) {
             Text(stringResource(R.string.runtime_gc_run, GcViewModel.RUN_SECONDS))

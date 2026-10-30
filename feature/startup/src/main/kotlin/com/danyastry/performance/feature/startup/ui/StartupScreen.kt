@@ -34,6 +34,7 @@ import com.danyastry.performance.core.ui.environment.EnvironmentBanner
 import com.danyastry.performance.feature.startup.R
 import com.danyastry.performance.feature.startup.data.PreferencesStartupStore
 import com.danyastry.performance.feature.startup.data.ProfileStatusReader
+import com.danyastry.performance.feature.startup.data.StartupLibrary
 import com.danyastry.performance.feature.startup.model.InitMode
 import com.danyastry.performance.feature.startup.model.ModeStats
 import com.danyastry.performance.feature.startup.model.ProfileStatus

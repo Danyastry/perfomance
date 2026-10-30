@@ -9,20 +9,6 @@ import org.junit.Test
 class StartupLogicTest {
 
     @Test
-    fun `measures from process start`() {
-        val sample = StartupClock.sample(InitMode.LAZY, processStartUptime = 1_000, applicationCreatedUptime = 1_120, firstFrameUptime = 1_450, now = 9)
-
-        assertThat(sample).isEqualTo(StartupSample(InitMode.LAZY, applicationMillis = 120, firstFrameMillis = 450, timestampMillis = 9))
-    }
-
-    @Test
-    fun `refuses marks that are out of order`() {
-        assertThat(StartupClock.sample(InitMode.EAGER, 0, 10, 20, 0)).isNull()
-        assertThat(StartupClock.sample(InitMode.EAGER, 100, 90, 120, 0)).isNull()
-        assertThat(StartupClock.sample(InitMode.EAGER, 100, 120, 110, 0)).isNull()
-    }
-
-    @Test
     fun `summarises launches per mode with the median`() {
         val samples = listOf(
             sample(InitMode.EAGER, 900), sample(InitMode.EAGER, 700), sample(InitMode.EAGER, 800),

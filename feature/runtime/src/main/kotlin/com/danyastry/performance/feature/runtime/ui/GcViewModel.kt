@@ -6,7 +6,7 @@ import androidx.compose.runtime.withFrameNanos
 import androidx.compose.ui.platform.AndroidUiDispatcher
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.danyastry.performance.core.ui.frames.FrameGapStats
+import com.danyastry.performance.core.ui.frames.FrameRecorder
 import com.danyastry.performance.feature.runtime.data.RuntimeStats
 import com.danyastry.performance.feature.runtime.logic.AllocatingParticleField
 import com.danyastry.performance.feature.runtime.logic.PackedParticleField
@@ -42,7 +42,7 @@ class GcViewModel(
         if (!_state.value.running) _state.update { it.copy(mode = mode) }
     }
 
-    fun onStart(frameIntervalNanos: Long) {
+    fun onStart(recorder: FrameRecorder) {
         if (_state.value.running) return
         val mode = _state.value.mode
         val start = readCounters()
@@ -54,25 +54,25 @@ class GcViewModel(
                     _state.update { it.copy(live = readCounters() - start) }
                 }
             }
-            val frames = runFrames(mode)
+            recorder.start()
+            val durationNanos = runFrames(mode)
+            val frames = recorder.stop()
             polling.cancel()
             val counters = readCounters() - start
             val report = GcReport(
                 mode = mode,
                 particles = particles,
-                seconds = (frames.last() - frames.first()) / NANOS_PER_SECOND.toDouble(),
+                seconds = durationNanos / NANOS_PER_SECOND.toDouble(),
                 counters = counters,
-                frames = FrameGapStats.of(frames, frameIntervalNanos),
+                frames = frames,
             )
             _state.update { it.copy(running = false, live = counters, report = report) }
         }
     }
 
-    private suspend fun runFrames(mode: GcMode): List<Long> {
+    private suspend fun runFrames(mode: GcMode): Long {
         val field = if (mode == GcMode.ALLOCATE) allocating else packed
-        val frames = ArrayList<Long>(FRAMES_CAPACITY)
         val first = withFrameNanos { it }
-        frames += first
         var previous = first
         while (previous - first < runNanos) {
             previous = withFrameNanos { now ->
@@ -80,9 +80,8 @@ class GcViewModel(
                 _frame.longValue = now
                 now
             }
-            frames += previous
         }
-        return frames
+        return previous - first
     }
 
     companion object {
@@ -91,6 +90,5 @@ class GcViewModel(
         private const val SEED = 42
         private const val POLL_MILLIS = 500L
         private const val NANOS_PER_SECOND = 1_000_000_000L
-        private const val FRAMES_CAPACITY = 1_300
     }
 }
