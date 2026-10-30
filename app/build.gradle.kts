@@ -33,6 +33,7 @@ dependencies {
     implementation(projects.feature.scrolling)
     implementation(projects.feature.memory)
     implementation(projects.feature.mainthread)
+    implementation(projects.feature.runtime)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.profileinstaller)

@@ -1,0 +1,39 @@
+<resources>
+    <string name="runtime_ms">%1$d ms</string>
+    <string name="runtime_ms_precise">%1$.3f ms</string>
+    <string name="runtime_mb">%1$.1f MB</string>
+    <string name="runtime_mb_per_second">%1$.1f MB/s</string>
+    <string name="runtime_times">%1$.1fx</string>
+
+    <string name="runtime_warmup_intro">The run computes a CRC32 checksum of the same buffer over and over and times every batch (batches: %1$d, buffer: %2$d KB). ART starts by interpreting the loop, counts how hot it is, compiles it with the JIT on a background thread and switches to the compiled code, sometimes in the middle of the loop (on-stack replacement). If the app was compiled ahead of time, the loop is fast from the first batch.</string>
+    <string name="runtime_warmup_run">Run the workload</string>
+    <string name="runtime_warmup_first">First run in this process</string>
+    <string name="runtime_warmup_again">Already warm in this process. The JIT keeps compiled code until the process dies, so close the app from recents to see a cold start again.</string>
+    <string name="runtime_warmup_chart_caption">Each bar is one batch, first on the left. Height shows how much slower it was than the warm median, on a log scale from 1x (flat) to %1$dx (full height).</string>
+    <string name="runtime_warmup_first_batch">First batch</string>
+    <string name="runtime_warmup_warm_batch">Median of the last %1$d</string>
+    <string name="runtime_warmup_speedup">First vs warm</string>
+    <string name="runtime_warmup_warm_from">Warm from batch</string>
+    <string name="runtime_warmup_modes_title">Compare compilation modes</string>
+    <string name="runtime_warmup_modes">Each command recompiles the app and stops it. Reopen this screen and press Run once. verify: no ahead-of-time code, so you see the interpreter and then the JIT. speed-profile: methods in the app\'s profile are compiled ahead of time, which is what Play does with a Baseline Profile. speed: everything is compiled ahead of time. This loop is not in the Baseline Profile, so speed-profile looks like verify here. In a debug build the first batches are much slower than in release, because debuggable apps cannot use ART\'s fast interpreter (nterp); measure warm-up on a release build.</string>
+    <string name="runtime_warmup_commands">adb shell cmd package compile -m verify -f com.danyastry.performance\nadb shell cmd package compile -m speed-profile -f com.danyastry.performance\nadb shell cmd package compile -m speed -f com.danyastry.performance</string>
+
+    <string name="runtime_gc_intro">Every frame moves all the particles (count: %1$d). Both modes compute exactly the same positions; only the memory use differs.</string>
+    <string name="runtime_gc_mode_allocate">Allocate every frame</string>
+    <string name="runtime_gc_mode_reuse">Reuse arrays</string>
+    <string name="runtime_gc_allocate_explanation">Each frame builds a new list of immutable Particle objects and a new list of points to draw, the way an immutable state style often does.</string>
+    <string name="runtime_gc_reuse_explanation">Positions live in one FloatArray that is updated in place and drawn with Canvas.drawPoints from a second, reused FloatArray.</string>
+    <string name="runtime_gc_run">Run (duration: %1$d s)</string>
+    <string name="runtime_gc_live">Since the run started</string>
+    <string name="runtime_gc_report_title">Last run: %1$s, %2$.1f s</string>
+    <string name="runtime_gc_count">Collections</string>
+    <string name="runtime_gc_time">GC time</string>
+    <string name="runtime_gc_blocking">Blocking</string>
+    <string name="runtime_gc_blocking_value">%1$d (%2$d ms)</string>
+    <string name="runtime_gc_allocated">Allocated</string>
+    <string name="runtime_gc_rate">Allocation rate</string>
+    <string name="runtime_gc_frames">Frames</string>
+    <string name="runtime_gc_longest_gap">Longest frame gap</string>
+    <string name="runtime_gc_missed">Missed frames</string>
+    <string name="runtime_gc_how_to_read">The numbers come from ART\'s own counters (Debug.getRuntimeStat). ART collects garbage concurrently, on its own threads, so most collections do not stop the app; a blocking collection is one where a thread had to wait for the GC. Allocation still costs CPU on the main thread and every collection costs CPU somewhere, which is why reusing memory in hot paths like animations matters. A collection only starts when the heap reaches ART\'s target size, so a fresh process with a large heap may need a few seconds of allocation before the first one. The optimizing compiler can also remove an allocation entirely when the object never escapes the method.</string>
+</resources>

@@ -1,6 +1,5 @@
-package com.danyastry.performance.feature.mainthread.logic
+package com.danyastry.performance.core.ui.frames
 
-import com.danyastry.performance.feature.mainthread.model.FrameGaps
 import com.google.common.truth.Truth.assertThat
 import org.junit.Test
 
