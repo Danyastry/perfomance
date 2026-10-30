@@ -2,10 +2,10 @@ package com.danyastry.performance.feature.mainthread.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.danyastry.performance.core.ui.frames.FrameGapStats
 import com.danyastry.performance.feature.mainthread.data.ReceiptFile
 import com.danyastry.performance.feature.mainthread.frames.ChoreographerFrameRecorder
 import com.danyastry.performance.feature.mainthread.frames.FrameRecorder
-import com.danyastry.performance.feature.mainthread.logic.FrameGapStats
 import com.danyastry.performance.feature.mainthread.logic.ReceiptLoader
 import com.danyastry.performance.feature.mainthread.logic.parse.ReceiptParsers
 import com.danyastry.performance.feature.mainthread.model.LoadMode

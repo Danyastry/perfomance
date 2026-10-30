@@ -21,5 +21,6 @@ android {
 
 dependencies {
     androidTestImplementation(projects.feature.mainthread)
+    androidTestImplementation(projects.feature.runtime)
     androidTestImplementation(libs.androidx.benchmark.junit4)
 }

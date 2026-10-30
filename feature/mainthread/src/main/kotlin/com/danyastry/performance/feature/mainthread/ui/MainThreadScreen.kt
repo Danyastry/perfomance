@@ -30,8 +30,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.danyastry.performance.core.ui.components.SegmentedSelector
 import com.danyastry.performance.core.ui.environment.EnvironmentBanner
+import com.danyastry.performance.core.ui.frames.FrameGapStats
 import com.danyastry.performance.feature.mainthread.R
-import com.danyastry.performance.feature.mainthread.logic.FrameGapStats
 import com.danyastry.performance.feature.mainthread.logic.ReceiptLoader
 import com.danyastry.performance.feature.mainthread.logic.ViolationGroups
 import com.danyastry.performance.feature.mainthread.model.LoadMode

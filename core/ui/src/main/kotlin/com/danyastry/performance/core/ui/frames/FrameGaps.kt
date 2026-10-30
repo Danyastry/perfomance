@@ -1,4 +1,4 @@
-package com.danyastry.performance.feature.mainthread.model
+package com.danyastry.performance.core.ui.frames
 
 data class FrameGaps(
     val frames: Int,
