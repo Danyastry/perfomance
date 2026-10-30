@@ -1,6 +1,7 @@
 package com.danyastry.performance.feature.mainthread.ui
 
 import androidx.annotation.StringRes
+import com.danyastry.performance.core.contract.LabTags
 import com.danyastry.performance.feature.mainthread.R
 import com.danyastry.performance.feature.mainthread.model.LoadMode
 import com.danyastry.performance.feature.mainthread.model.ParserKind
@@ -25,6 +26,12 @@ object MainThreadLabels {
         ParserKind.REGEX -> R.string.mainthread_parser_regex
         ParserKind.SPLIT -> R.string.mainthread_parser_split
         ParserKind.SCAN -> R.string.mainthread_parser_scan
+    }
+
+    fun parserTag(parser: ParserKind): String = when (parser) {
+        ParserKind.REGEX -> LabTags.PARSER_REGEX
+        ParserKind.SPLIT -> LabTags.PARSER_SPLIT
+        ParserKind.SCAN -> LabTags.PARSER_SCAN
     }
 
     @StringRes

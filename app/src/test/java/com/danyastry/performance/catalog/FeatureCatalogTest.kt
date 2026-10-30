@@ -2,6 +2,7 @@ package com.danyastry.performance.catalog
 
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import com.danyastry.performance.core.contract.LabIds
 import com.danyastry.performance.core.ui.FeatureCategory
 import com.danyastry.performance.core.ui.FeatureEntry
 import com.danyastry.performance.core.ui.FeatureInfo
@@ -78,6 +79,11 @@ class FeatureCatalogTest {
     @Test
     fun `registry has unique ids`() {
         FeatureCatalog(FeatureRegistry.features, deviceSdk = 35)
+    }
+
+    @Test
+    fun `every registered lab has an id in the benchmark contract`() {
+        assertThat(FeatureRegistry.features.map { it.info.id }).containsExactlyElementsIn(LabIds.ALL)
     }
 
     private fun feature(id: String, name: String, category: FeatureCategory, minSdk: Int = 26): FeatureEntry =

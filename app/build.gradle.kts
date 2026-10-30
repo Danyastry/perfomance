@@ -27,6 +27,7 @@ android {
 }
 
 dependencies {
+    implementation(projects.core.contract)
     implementation(projects.core.ui)
     implementation(projects.feature.startup)
     implementation(projects.feature.recomposition)

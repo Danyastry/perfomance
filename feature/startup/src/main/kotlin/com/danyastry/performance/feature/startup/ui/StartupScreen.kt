@@ -20,6 +20,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -27,6 +28,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.danyastry.performance.core.contract.LabTags
 import com.danyastry.performance.core.ui.components.SegmentedSelector
 import com.danyastry.performance.core.ui.environment.EnvironmentBanner
 import com.danyastry.performance.feature.startup.R
@@ -120,7 +122,7 @@ private fun ModePicker(state: StartupUiState, actions: StartupActions) {
             onSelect = actions.onModeChange,
         )
         Text(stringResource(state.selectedMode.explanationRes), style = MaterialTheme.typography.bodySmall)
-        Button(onClick = actions.onRestart, modifier = Modifier.fillMaxWidth()) {
+        Button(onClick = actions.onRestart, modifier = Modifier.fillMaxWidth().testTag(LabTags.COLD_START_RESTART)) {
             Text(stringResource(if (state.restartNeeded) R.string.startup_restart_to_apply else R.string.startup_restart))
         }
     }

@@ -1,15 +1,17 @@
 package com.danyastry.performance.feature.runtime.ui
 
+import androidx.compose.runtime.MonotonicFrameClock
 import com.danyastry.performance.feature.runtime.model.GcCounters
 import com.danyastry.performance.feature.runtime.model.GcMode
 import com.google.common.truth.Truth.assertThat
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.StandardTestDispatcher
-import kotlinx.coroutines.test.advanceTimeBy
+import kotlinx.coroutines.test.advanceUntilIdle
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
+import kotlinx.coroutines.yield
 import org.junit.After
 import org.junit.Before
 import org.junit.Test
@@ -18,7 +20,8 @@ import org.junit.Test
 class GcViewModelTest {
 
     private val main = StandardTestDispatcher()
-    private var counters = GcCounters(gcCount = 10, gcTimeMillis = 100, blockingGcCount = 0, blockingGcTimeMillis = 0, bytesAllocated = 0)
+    private val clock = FakeFrameClock()
+    private var reads = 0
 
     @Before
     fun setUp() {
@@ -31,49 +34,76 @@ class GcViewModelTest {
     }
 
     @Test
-    fun `live counters show only what happened since the start`() = runTest(main) {
-        val viewModel = GcViewModel(readCounters = { counters })
-        viewModel.onStart()
+    fun `a run measures every frame for its whole length and reports the counter deltas`() = runTest(main) {
+        val viewModel = viewModel()
 
-        counters = counters.copy(gcCount = 13, bytesAllocated = 3 * MB)
-        advanceTimeBy(600)
-
-        assertThat(viewModel.state.value.live.gcCount).isEqualTo(3)
-        assertThat(viewModel.state.value.live.bytesAllocated).isEqualTo(3 * MB)
-        viewModel.onFinished(100, listOf(0L, SECOND), INTERVAL)
-    }
-
-    @Test
-    fun `finishing builds a report with rates and frame gaps`() = runTest(main) {
-        val viewModel = GcViewModel(readCounters = { counters })
-        viewModel.onModeChange(GcMode.REUSE)
-        viewModel.onStart()
-        counters = counters.copy(gcCount = 11, gcTimeMillis = 130, bytesAllocated = 20 * MB)
-
-        viewModel.onFinished(5_000, listOf(0L, INTERVAL, 2 * INTERVAL, 2 * SECOND), INTERVAL)
+        viewModel.onStart(INTERVAL)
+        advanceUntilIdle()
 
         val report = viewModel.state.value.report!!
-        assertThat(report.mode).isEqualTo(GcMode.REUSE)
-        assertThat(report.particles).isEqualTo(5_000)
-        assertThat(report.counters).isEqualTo(GcCounters(1, 30, 0, 0, 20 * MB))
-        assertThat(report.seconds).isWithin(1e-9).of(2.0)
-        assertThat(report.megabytesPerSecond).isWithin(1e-9).of(10.0)
-        assertThat(report.frames.frames).isEqualTo(4)
+        assertThat(report.mode).isEqualTo(GcMode.ALLOCATE)
+        assertThat(report.particles).isEqualTo(PARTICLES)
+        assertThat(report.seconds).isWithin(0.02).of(1.0)
+        assertThat(report.frames.frames).isEqualTo(clock.frames)
+        assertThat(report.frames.missedFrames).isEqualTo(0)
+        assertThat(report.counters).isEqualTo(GcCounters(gcCount = 2, gcTimeMillis = 20, blockingGcCount = 0, blockingGcTimeMillis = 0, bytesAllocated = 2 * MB))
+        assertThat(report.megabytesPerSecond).isWithin(0.05).of(2.0)
         assertThat(viewModel.state.value.running).isFalse()
     }
 
     @Test
-    fun `the mode cannot change during a run`() = runTest(main) {
-        val viewModel = GcViewModel(readCounters = { counters })
-        viewModel.onStart()
-
+    fun `each frame moves the chosen field and publishes the frame time`() = runTest(main) {
+        val viewModel = viewModel()
         viewModel.onModeChange(GcMode.REUSE)
+        val before = viewModel.packed.x(0)
+        val allocatingBefore = viewModel.allocating.x(0)
+
+        viewModel.onStart(INTERVAL)
+        advanceUntilIdle()
+
+        assertThat(viewModel.packed.x(0)).isNotEqualTo(before)
+        assertThat(viewModel.allocating.x(0)).isEqualTo(allocatingBefore)
+        assertThat(viewModel.frame.value).isEqualTo(clock.time)
+        assertThat(viewModel.state.value.report!!.mode).isEqualTo(GcMode.REUSE)
+    }
+
+    @Test
+    fun `a second start and a mode change during a run are ignored`() = runTest(main) {
+        val viewModel = viewModel()
+
+        viewModel.onStart(INTERVAL)
+        viewModel.onModeChange(GcMode.REUSE)
+        viewModel.onStart(INTERVAL)
+        advanceUntilIdle()
 
         assertThat(viewModel.state.value.mode).isEqualTo(GcMode.ALLOCATE)
-        viewModel.onFinished(1, listOf(0L), INTERVAL)
+        assertThat(reads).isEqualTo(2)
+    }
+
+    private fun viewModel() = GcViewModel(
+        readCounters = {
+            reads++
+            GcCounters(gcCount = 10L + 2 * (reads - 1), gcTimeMillis = 100L + 20 * (reads - 1), blockingGcCount = 0, blockingGcTimeMillis = 0, bytesAllocated = (reads - 1) * 2 * MB)
+        },
+        frameContext = { main + clock },
+        runNanos = SECOND,
+        particles = PARTICLES,
+    )
+
+    private class FakeFrameClock : MonotonicFrameClock {
+        var time = 0L
+        var frames = 0
+
+        override suspend fun <R> withFrameNanos(onFrame: (frameTimeNanos: Long) -> R): R {
+            yield()
+            time += INTERVAL
+            frames++
+            return onFrame(time)
+        }
     }
 
     private companion object {
+        const val PARTICLES = 200
         const val MB = 1024L * 1024L
         const val INTERVAL = 16_666_667L
         const val SECOND = 1_000_000_000L

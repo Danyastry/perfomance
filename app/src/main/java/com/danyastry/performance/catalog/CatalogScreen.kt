@@ -18,15 +18,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.danyastry.performance.R
-import com.danyastry.performance.core.ui.environment.EnvironmentBanner
+import com.danyastry.performance.core.contract.LabTags
 import com.danyastry.performance.core.ui.AndroidVersion
 import com.danyastry.performance.core.ui.FeatureCategory
 import com.danyastry.performance.core.ui.FeatureEntry
 import com.danyastry.performance.core.ui.RequirementBadge
 import com.danyastry.performance.core.ui.descriptionRes
+import com.danyastry.performance.core.ui.environment.EnvironmentBanner
 import com.danyastry.performance.core.ui.titleRes
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -52,7 +54,7 @@ private fun CatalogList(
     onFeatureClick: (String) -> Unit,
     contentPadding: PaddingValues,
 ) {
-    LazyColumn(contentPadding = contentPadding) {
+    LazyColumn(contentPadding = contentPadding, modifier = Modifier.testTag(LabTags.CATALOG_LIST)) {
         item(key = ENVIRONMENT_KEY) {
             EnvironmentBanner(Modifier.padding(horizontal = 16.dp, vertical = 8.dp))
         }
@@ -98,6 +100,7 @@ private fun FeatureRow(entry: FeatureEntry, isSupported: Boolean, onClick: () ->
             null
         },
         modifier = Modifier
+            .testTag(LabTags.catalogRow(entry.info.id))
             .alpha(if (isSupported) 1f else UNSUPPORTED_ALPHA)
             .clickable(enabled = isSupported, onClick = onClick),
     )
