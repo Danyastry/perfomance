@@ -9,6 +9,7 @@ object LabIds {
     const val JIT_WARMUP = "jit-warmup"
     const val GARBAGE_COLLECTION = "garbage-collection"
     const val FRAME_PIPELINE = "frame-pipeline"
+    const val COMPOSE_SNAPSHOTS = "compose-snapshots"
 
     val ALL: List<String> = listOf(
         COLD_START,
@@ -19,5 +20,6 @@ object LabIds {
         JIT_WARMUP,
         GARBAGE_COLLECTION,
         FRAME_PIPELINE,
+        COMPOSE_SNAPSHOTS,
     )
 }

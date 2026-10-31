@@ -1,0 +1,15 @@
+<resources>
+    <string name="snapshots_intro">Every mutableStateOf in Compose lives in the snapshot system, which works like an in-memory database with transactions. Each button below runs the code shown against the real snapshot system and prints what it observed.</string>
+    <string name="snapshots_run">Run</string>
+    <string name="snapshots_run_again">Run again</string>
+    <string name="snapshots_observed">// %1$s</string>
+    <string name="snapshots_isolation_title">Isolation</string>
+    <string name="snapshots_isolation_explanation">A mutable snapshot is a private copy of all state. Writes inside it stay invisible to everyone else until apply() publishes them in one step. Compose uses this to compose on one thread while the rest of the app keeps reading a consistent state.</string>
+    <string name="snapshots_conflict_title">Apply conflict, default policy</string>
+    <string name="snapshots_conflict_explanation">Two snapshots start from stock 10. The first sells one, the second sells two. The first apply wins. The second snapshot changed a value that someone else changed after it started. The default policy cannot merge that, so its apply fails and its sale is lost unless the caller retries.</string>
+    <string name="snapshots_merge_title">Apply conflict, merge policy</string>
+    <string name="snapshots_merge_explanation">Same race, but the state has a mutation policy whose merge adds the second change on top of the current value (current + applied - previous). Both applies succeed and both sales count.</string>
+    <string name="snapshots_observation_title">Read and write observation</string>
+    <string name="snapshots_observation_explanation">Snapshot.observe reports every state a block reads, and an apply observer reports every state a write changed. This is how Compose builds recomposition scopes: a scope that read price is invalidated when price changes, and ignored when only stock does.</string>
+    <string name="snapshots_why_it_matters">Why it matters for performance: Compose only reruns the scopes whose reads changed, so where you read state decides how much work a change causes. Reading state as late as possible, inside a lambda or a draw block, narrows the scope; the recomposition and frame pipeline labs show the effect.</string>
+</resources>

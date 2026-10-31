@@ -36,6 +36,7 @@ dependencies {
     implementation(projects.feature.mainthread)
     implementation(projects.feature.runtime)
     implementation(projects.feature.rendering)
+    implementation(projects.feature.snapshots)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.profileinstaller)
