@@ -1,8 +1,5 @@
 package com.danyastry.performance.feature.rendering.ui
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -20,37 +17,28 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.danyastry.performance.core.ui.environment.EnvironmentBanner
+import com.danyastry.performance.core.ui.frames.rememberFrameBudgetMillis
 import com.danyastry.performance.feature.rendering.R
-import com.danyastry.performance.feature.rendering.data.FrameMetricsRecorder
 import com.danyastry.performance.feature.rendering.logic.BusyWork
 import com.danyastry.performance.feature.rendering.model.FramePhase
 import com.danyastry.performance.feature.rendering.model.PhaseLoad
 import com.danyastry.performance.feature.rendering.model.PipelineSnapshot
+import kotlinx.coroutines.flow.Flow
 
 @Composable
 fun PipelineRoute(modifier: Modifier = Modifier) {
     val viewModel: PipelineViewModel = viewModel()
     val load by viewModel.load.collectAsStateWithLifecycle()
-    val snapshot by viewModel.snapshots.collectAsStateWithLifecycle(PipelineSnapshot.EMPTY)
-    val window = LocalContext.current.findActivity()?.window
-    val refreshRate = LocalView.current.display?.refreshRate ?: DEFAULT_REFRESH_RATE
-    DisposableEffect(window, viewModel) {
-        val recorder = FrameMetricsRecorder(viewModel.history)
-        window?.let(recorder::attach)
-        onDispose { recorder.detach() }
-    }
+    FrameMetricsEffect(viewModel.frameSink)
     Column(
         modifier = modifier.verticalScroll(rememberScrollState()).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -60,7 +48,7 @@ fun PipelineRoute(modifier: Modifier = Modifier) {
         LoadPicker(load, viewModel::onLoadChange)
         Text(stringResource(PipelineLabels.loadExplanation(load), BusyWork.LOAD_MILLIS), style = MaterialTheme.typography.bodySmall)
         PhaseLoadArea(load)
-        BreakdownCard(snapshot, MILLIS_PER_SECOND / refreshRate)
+        BreakdownCard(viewModel.snapshots, rememberFrameBudgetMillis())
         Text(stringResource(R.string.rendering_how_to_read), style = MaterialTheme.typography.bodySmall)
     }
 }
@@ -81,7 +69,8 @@ private fun LoadPicker(selected: PhaseLoad, onSelect: (PhaseLoad) -> Unit) {
 }
 
 @Composable
-private fun BreakdownCard(snapshot: PipelineSnapshot, frameBudgetMillis: Double) {
+private fun BreakdownCard(snapshots: Flow<PipelineSnapshot>, frameBudgetMillis: Double) {
+    val snapshot by snapshots.collectAsStateWithLifecycle(PipelineSnapshot.EMPTY)
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(stringResource(R.string.rendering_chart_title, frameBudgetMillis), style = MaterialTheme.typography.titleSmall)
@@ -91,6 +80,9 @@ private fun BreakdownCard(snapshot: PipelineSnapshot, frameBudgetMillis: Double)
                 if (phase != FramePhase.GPU || snapshot.gpuAvailable) PhaseRow(phase, snapshot.averageMillis[phase] ?: 0.0)
             }
             if (!snapshot.gpuAvailable) Text(stringResource(R.string.rendering_gpu_unavailable), style = MaterialTheme.typography.labelSmall)
+            if (snapshot.missedByMeter > 0) {
+                Text(stringResource(R.string.rendering_meter_missed, snapshot.missedByMeter), style = MaterialTheme.typography.labelSmall)
+            }
         }
     }
 }
@@ -104,12 +96,3 @@ private fun PhaseRow(phase: FramePhase, millis: Double) {
         Text(stringResource(R.string.rendering_ms, millis), style = MaterialTheme.typography.bodyMedium)
     }
 }
-
-private tailrec fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
-}
-
-private const val DEFAULT_REFRESH_RATE = 60f
-private const val MILLIS_PER_SECOND = 1_000.0

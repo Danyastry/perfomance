@@ -2,6 +2,7 @@ package com.danyastry.performance.feature.rendering.ui
 
 import androidx.lifecycle.ViewModel
 import com.danyastry.performance.feature.rendering.logic.FrameHistory
+import com.danyastry.performance.feature.rendering.logic.FrameMetricsSink
 import com.danyastry.performance.feature.rendering.model.PhaseLoad
 import com.danyastry.performance.feature.rendering.model.PipelineSnapshot
 import kotlinx.coroutines.delay
@@ -12,9 +13,11 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.flow
 
 class PipelineViewModel(
-    val history: FrameHistory = FrameHistory(),
+    private val history: FrameHistory = FrameHistory(),
     private val pollMillis: Long = POLL_MILLIS,
 ) : ViewModel() {
+
+    val frameSink: FrameMetricsSink = history
 
     private val _load = MutableStateFlow(PhaseLoad.NONE)
     val load: StateFlow<PhaseLoad> = _load.asStateFlow()
