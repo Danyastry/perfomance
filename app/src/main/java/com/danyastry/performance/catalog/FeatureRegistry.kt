@@ -8,6 +8,7 @@ import com.danyastry.performance.feature.rendering.PipelineFeature
 import com.danyastry.performance.feature.runtime.GcFeature
 import com.danyastry.performance.feature.runtime.WarmupFeature
 import com.danyastry.performance.feature.scrolling.ScrollingFeature
+import com.danyastry.performance.feature.snapshots.SnapshotsFeature
 import com.danyastry.performance.feature.startup.StartupFeature
 
 object FeatureRegistry {
@@ -20,5 +21,6 @@ object FeatureRegistry {
         WarmupFeature,
         GcFeature,
         PipelineFeature,
+        SnapshotsFeature,
     )
 }
