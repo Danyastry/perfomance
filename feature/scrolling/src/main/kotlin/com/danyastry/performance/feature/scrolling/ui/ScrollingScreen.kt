@@ -32,6 +32,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.danyastry.performance.core.contract.LabTags
 import com.danyastry.performance.core.ui.components.SegmentedSelector
+import com.danyastry.performance.core.ui.components.Stat
 import com.danyastry.performance.core.ui.environment.EnvironmentBanner
 import com.danyastry.performance.feature.scrolling.R
 import com.danyastry.performance.feature.scrolling.jank.JankCounter
@@ -121,14 +122,6 @@ private fun JankCard(counter: JankCounter) {
             Stat(stringResource(R.string.scrolling_median), stringResource(R.string.scrolling_decimal_ms, summary.medianFrameMicros / 1000.0))
             Stat(stringResource(R.string.scrolling_p90), stringResource(R.string.scrolling_decimal_ms, summary.p90FrameMicros / 1000.0))
         }
-    }
-}
-
-@Composable
-private fun Stat(label: String, value: String) {
-    Column {
-        Text(label, style = MaterialTheme.typography.labelSmall)
-        Text(value, style = MaterialTheme.typography.titleMedium)
     }
 }
 

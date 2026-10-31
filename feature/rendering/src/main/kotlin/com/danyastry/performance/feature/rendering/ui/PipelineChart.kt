@@ -8,18 +8,19 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.PathEffect
 import com.danyastry.performance.feature.rendering.model.FramePhase
+import com.danyastry.performance.feature.rendering.model.PipelineSnapshot
 
 @Composable
-fun PipelineChart(frames: List<Map<FramePhase, Double>>, frameBudgetMillis: Double, modifier: Modifier = Modifier) {
+fun PipelineChart(snapshot: PipelineSnapshot, frameBudgetMillis: Double, modifier: Modifier = Modifier) {
     val budgetColor = MaterialTheme.colorScheme.error
     val stacked = FramePhase.entries.filter { it.stacked }
     Canvas(modifier) {
         val scaleMillis = frameBudgetMillis * SCALE_BUDGETS
         val slot = size.width / SLOTS
-        frames.forEachIndexed { index, frame ->
+        for (index in 0 until snapshot.recentCount) {
             var top = size.height
             stacked.forEach { phase ->
-                val height = ((frame[phase] ?: 0.0) / scaleMillis * size.height).toFloat()
+                val height = (snapshot.recent(index, phase) / scaleMillis * size.height).toFloat()
                 if (height > 0f) {
                     top -= height
                     drawRect(PhaseColors.of(phase), topLeft = Offset(index * slot, top.coerceAtLeast(0f)), size = Size(slot * BAR_SHARE, height))

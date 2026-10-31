@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.danyastry.performance.core.ui.components.SegmentedSelector
+import com.danyastry.performance.core.ui.components.Stat
 import com.danyastry.performance.core.ui.environment.EnvironmentBanner
 import com.danyastry.performance.core.ui.frames.rememberFrameRecorder
 import com.danyastry.performance.feature.runtime.R

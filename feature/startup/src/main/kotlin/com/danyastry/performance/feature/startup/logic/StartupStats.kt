@@ -1,5 +1,6 @@
 package com.danyastry.performance.feature.startup.logic
 
+import com.danyastry.performance.core.ui.stats.Median
 import com.danyastry.performance.feature.startup.model.InitMode
 import com.danyastry.performance.feature.startup.model.ModeStats
 import com.danyastry.performance.feature.startup.model.StartupSample
@@ -11,12 +12,7 @@ object StartupStats {
         if (times.isEmpty()) {
             null
         } else {
-            ModeStats(mode, times.size, median(times), times.first())
+            ModeStats(mode, times.size, Median.of(times), times.first())
         }
-    }
-
-    internal fun median(sorted: List<Long>): Long {
-        val middle = sorted.size / 2
-        return if (sorted.size % 2 == 1) sorted[middle] else (sorted[middle - 1] + sorted[middle]) / 2
     }
 }

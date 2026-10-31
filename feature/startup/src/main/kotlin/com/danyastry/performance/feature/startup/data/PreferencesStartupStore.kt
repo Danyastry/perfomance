@@ -23,7 +23,7 @@ class PreferencesStartupStore(context: Context) : StartupStore {
 
     override fun clear() = preferences.edit(commit = true) { remove(KEY_SAMPLES) }
 
-    private companion object {
+    internal companion object {
         const val FILE = "startup_lab"
         const val KEY_MODE = "mode"
         const val KEY_SAMPLES = "samples"

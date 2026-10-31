@@ -30,12 +30,6 @@ class WarmupStatsTest {
     }
 
     @Test
-    fun `median of odd and even lists`() {
-        assertThat(WarmupStats.median(listOf(3L, 1L, 2L))).isEqualTo(2)
-        assertThat(WarmupStats.median(listOf(4L, 1L, 3L, 2L))).isEqualTo(2)
-    }
-
-    @Test
     fun `rejects an empty run`() {
         assertThrows(IllegalArgumentException::class.java) { WarmupStats.summarize(emptyList()) }
     }
