@@ -29,7 +29,7 @@ class PipelineViewModelTest {
 
         advanceTimeBy(100)
         assertThat(seen.map { it.frames }).containsExactly(0, 2).inOrder()
-        assertThat(seen.last().averageMillis[FramePhase.DRAW]).isWithin(1e-9).of(4.0)
+        assertThat(seen.last().average(FramePhase.DRAW)).isWithin(1e-9).of(4.0)
     }
 
     @Test

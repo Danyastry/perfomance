@@ -31,6 +31,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.danyastry.performance.core.contract.LabTags
 import com.danyastry.performance.core.contract.TraceSections
 import com.danyastry.performance.core.ui.components.SegmentedSelector
+import com.danyastry.performance.core.ui.components.Stat
 import com.danyastry.performance.core.ui.environment.EnvironmentBanner
 import com.danyastry.performance.core.ui.frames.rememberFrameRecorder
 import com.danyastry.performance.feature.mainthread.R
@@ -147,14 +148,6 @@ private fun ViolationsCard(violations: List<ViolationEntry>, onClear: () -> Unit
                 OutlinedButton(onClick = onClear) { Text(stringResource(R.string.mainthread_clear)) }
             }
         }
-    }
-}
-
-@Composable
-private fun Stat(label: String, value: String) {
-    Column {
-        Text(label, style = MaterialTheme.typography.labelSmall)
-        Text(value, style = MaterialTheme.typography.titleMedium)
     }
 }
 

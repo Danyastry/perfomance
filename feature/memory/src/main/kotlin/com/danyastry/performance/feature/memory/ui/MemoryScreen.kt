@@ -26,6 +26,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.danyastry.performance.core.ui.components.Stat
 import com.danyastry.performance.core.ui.environment.EnvironmentBanner
 import com.danyastry.performance.feature.memory.R
 import com.danyastry.performance.feature.memory.model.MemorySnapshot
@@ -86,14 +87,6 @@ private fun SnapshotCard(snapshot: MemorySnapshot) {
                 if (snapshot.leakCanaryAvailable) snapshot.retainedObjects.toString() else stringResource(R.string.memory_retained_unavailable),
             )
         }
-    }
-}
-
-@Composable
-private fun Stat(label: String, value: String) {
-    Column {
-        Text(label, style = MaterialTheme.typography.labelSmall)
-        Text(value, style = MaterialTheme.typography.titleMedium)
     }
 }
 

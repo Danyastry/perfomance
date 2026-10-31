@@ -17,9 +17,9 @@ class FrameHistoryTest {
 
         val snapshot = history.snapshot()
         assertThat(snapshot.frames).isEqualTo(2)
-        assertThat(snapshot.averageMillis[FramePhase.DRAW]).isWithin(1e-9).of(3.0)
-        assertThat(snapshot.averageMillis[FramePhase.TOTAL]).isWithin(1e-9).of(12.0)
-        assertThat(snapshot.averageMillis[FramePhase.LAYOUT]).isEqualTo(0.0)
+        assertThat(snapshot.average(FramePhase.DRAW)).isWithin(1e-9).of(3.0)
+        assertThat(snapshot.average(FramePhase.TOTAL)).isWithin(1e-9).of(12.0)
+        assertThat(snapshot.average(FramePhase.LAYOUT)).isEqualTo(0.0)
     }
 
     @Test
@@ -30,22 +30,22 @@ class FrameHistoryTest {
 
         val snapshot = history.snapshot()
         assertThat(snapshot.frames).isEqualTo(5)
-        assertThat(snapshot.averageMillis[FramePhase.DRAW]).isWithin(1e-9).of(4.0)
-        assertThat(snapshot.recentMillis.map { it[FramePhase.DRAW] }).containsExactly(4.0, 5.0).inOrder()
+        assertThat(snapshot.average(FramePhase.DRAW)).isWithin(1e-9).of(4.0)
+        assertThat((0 until snapshot.recentCount).map { snapshot.recent(it, FramePhase.DRAW) }).containsExactly(4.0, 5.0).inOrder()
     }
 
     @Test
     fun `GPU time is averaged only when the platform reports it`() {
         val history = FrameHistory(window = 4, recent = 4)
 
-        history.record(frame(gpu = FrameHistory.NOT_AVAILABLE), intendedVsyncNanos = 0, droppedBefore = 0)
+        history.record(frame(gpu = FrameMetricsSink.NOT_AVAILABLE), intendedVsyncNanos = 0, droppedBefore = 0)
         assertThat(history.snapshot().gpuAvailable).isFalse()
-        assertThat(history.snapshot().averageMillis[FramePhase.GPU]).isEqualTo(0.0)
+        assertThat(history.snapshot().average(FramePhase.GPU)).isEqualTo(0.0)
 
         history.record(frame(gpu = 6_000_000), intendedVsyncNanos = 0, droppedBefore = 0)
         assertThat(history.snapshot().gpuAvailable).isTrue()
-        assertThat(history.snapshot().averageMillis[FramePhase.GPU]).isWithin(1e-9).of(6.0)
-        assertThat(history.snapshot().recentMillis.first()[FramePhase.GPU]).isEqualTo(0.0)
+        assertThat(history.snapshot().average(FramePhase.GPU)).isWithin(1e-9).of(6.0)
+        assertThat(history.snapshot().recent(0, FramePhase.GPU)).isEqualTo(0.0)
     }
 
     @Test
@@ -55,7 +55,7 @@ class FrameHistoryTest {
 
         history.reset()
 
-        assertThat(history.snapshot()).isEqualTo(PipelineSnapshot.EMPTY)
+        assertThat(history.snapshot()).isSameInstanceAs(PipelineSnapshot.EMPTY)
     }
 
     @Test
@@ -71,7 +71,7 @@ class FrameHistoryTest {
 
         val snapshot = history.snapshot()
         assertThat(snapshot.frames).isEqualTo(1)
-        assertThat(snapshot.averageMillis[FramePhase.DRAW]).isWithin(1e-9).of(2.0)
+        assertThat(snapshot.average(FramePhase.DRAW)).isWithin(1e-9).of(2.0)
     }
 
     @Test

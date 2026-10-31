@@ -5,7 +5,6 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.view.FrameMetrics
 import android.view.Window
-import com.danyastry.performance.feature.rendering.logic.FrameHistory
 import com.danyastry.performance.feature.rendering.logic.FrameMetricsSink
 import com.danyastry.performance.feature.rendering.model.FramePhase
 
@@ -42,7 +41,7 @@ class FrameMetricsRecorder(private val sink: FrameMetricsSink) : Window.OnFrameM
         scratch[FramePhase.GPU.ordinal] = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             frameMetrics.getMetric(FrameMetrics.GPU_DURATION)
         } else {
-            FrameHistory.NOT_AVAILABLE
+            FrameMetricsSink.NOT_AVAILABLE
         }
         scratch[FramePhase.TOTAL.ordinal] = frameMetrics.getMetric(FrameMetrics.TOTAL_DURATION)
         sink.record(scratch, frameMetrics.getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP), dropCountSinceLastInvocation)

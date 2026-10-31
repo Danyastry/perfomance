@@ -1,13 +1,32 @@
 package com.danyastry.performance.feature.rendering.model
 
-data class PipelineSnapshot(
+class PipelineSnapshot(
     val frames: Int,
-    val averageMillis: Map<FramePhase, Double>,
-    val recentMillis: List<Map<FramePhase, Double>>,
+    private val averages: DoubleArray,
+    private val recent: DoubleArray,
+    val recentCount: Int,
     val gpuAvailable: Boolean,
-    val missedByMeter: Int = 0,
+    val missedByMeter: Int,
 ) {
+    init {
+        require(averages.size == PHASES) { "expected $PHASES averages, got ${averages.size}" }
+        require(recent.size == recentCount * PHASES) { "expected ${recentCount * PHASES} recent values, got ${recent.size}" }
+    }
+
+    fun average(phase: FramePhase): Double = averages[phase.ordinal]
+
+    fun recent(frame: Int, phase: FramePhase): Double = recent[frame * PHASES + phase.ordinal]
+
     companion object {
-        val EMPTY = PipelineSnapshot(frames = 0, averageMillis = emptyMap(), recentMillis = emptyList(), gpuAvailable = false)
+        private val PHASES = FramePhase.entries.size
+
+        val EMPTY = PipelineSnapshot(
+            frames = 0,
+            averages = DoubleArray(PHASES),
+            recent = DoubleArray(0),
+            recentCount = 0,
+            gpuAvailable = false,
+            missedByMeter = 0,
+        )
     }
 }

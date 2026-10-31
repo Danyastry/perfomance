@@ -74,10 +74,10 @@ private fun BreakdownCard(snapshots: Flow<PipelineSnapshot>, frameBudgetMillis: 
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(stringResource(R.string.rendering_chart_title, frameBudgetMillis), style = MaterialTheme.typography.titleSmall)
-            PipelineChart(snapshot.recentMillis, frameBudgetMillis, Modifier.fillMaxWidth().height(140.dp))
+            PipelineChart(snapshot, frameBudgetMillis, Modifier.fillMaxWidth().height(140.dp))
             Text(stringResource(R.string.rendering_average_title, snapshot.frames), style = MaterialTheme.typography.titleSmall)
             FramePhase.entries.forEach { phase ->
-                if (phase != FramePhase.GPU || snapshot.gpuAvailable) PhaseRow(phase, snapshot.averageMillis[phase] ?: 0.0)
+                if (phase != FramePhase.GPU || snapshot.gpuAvailable) PhaseRow(phase, snapshot.average(phase))
             }
             if (!snapshot.gpuAvailable) Text(stringResource(R.string.rendering_gpu_unavailable), style = MaterialTheme.typography.labelSmall)
             if (snapshot.missedByMeter > 0) {
