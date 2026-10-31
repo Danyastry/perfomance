@@ -10,9 +10,10 @@
     <string name="rendering_load_composition_explanation">The spinner\'s angle is read in a composable body, so it recomposes every frame and spends %1$d ms there. Compose runs composition from Choreographer\'s animation callback, so it shows up as Animation.</string>
     <string name="rendering_load_layout_explanation">The angle is read inside a measure lambda, so only layout runs again every frame, and the measure spends %1$d ms. Watch where it lands: in Draw, not in Layout and measure. Compose measures and places its own nodes at the start of the View draw pass, and FrameMetrics only reports Layout and measure when the View system itself asked for a layout.</string>
     <string name="rendering_load_draw_explanation">The angle is read inside a Canvas, so only drawing runs again every frame, and the draw lambda spends %1$d ms. Draw time here is recording commands on the UI thread, not painting pixels.</string>
-    <string name="rendering_load_render_explanation">Each frame records 4,000 large translucent circles. Recording them is cheap on the UI thread, but the RenderThread has to issue every one and the GPU has to blend them. When the RenderThread falls behind, the UI thread has to wait before it can start the next frame, and that wait shows up as Unknown delay.</string>
+    <string name="rendering_load_render_explanation">4,000 large translucent circles are recorded once into a layer, and each frame only changes the layer\'s rotation. The UI thread has almost nothing to do, but the RenderThread has to replay every circle and the GPU has to blend them.</string>
     <string name="rendering_chart_title">Last 60 frames, dashed line at the %1$.1f ms frame budget</string>
     <string name="rendering_average_title">Average per phase over the recent frames (frames recorded: %1$d)</string>
+    <string name="rendering_meter_missed">FrameMetrics dropped some reports because the meter fell behind (frames not counted: %1$d).</string>
     <string name="rendering_gpu_unavailable">GPU time is reported from Android 12 on.</string>
     <string name="rendering_phase_unknown_delay">Unknown delay</string>
     <string name="rendering_phase_input">Input</string>

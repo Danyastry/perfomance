@@ -68,6 +68,16 @@ class PhaseLoadTest {
     }
 
     @Test
+    fun theRenderThreadLoadStaysOffTheUiThread() {
+        val idle = measure(PhaseLoad.NONE)
+        val loaded = measure(PhaseLoad.RENDER_THREAD)
+
+        assertThat(loaded.getValue(FramePhase.DRAW)).isLessThan(QUIET)
+        assertThat(loaded.getValue(FramePhase.ANIMATION)).isLessThan(QUIET)
+        assertThat(loaded.getValue(FramePhase.COMMAND_ISSUE)).isAtLeast(idle.getValue(FramePhase.COMMAND_ISSUE) + RENDER_EXTRA)
+    }
+
+    @Test
     fun withoutLoadTheUiThreadPhasesStayQuiet() {
         val averages = measure(PhaseLoad.NONE)
 
@@ -91,5 +101,6 @@ class PhaseLoadTest {
         const val MIN_FRAMES = 20
         val LOADED = BusyWork.LOAD_MILLIS * 0.85
         const val QUIET = 2.0
+        const val RENDER_EXTRA = 1.0
     }
 }

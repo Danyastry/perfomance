@@ -1,8 +1,5 @@
 package com.danyastry.performance.feature.scrolling.jank
 
-import android.app.Activity
-import android.content.Context
-import android.content.ContextWrapper
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -11,6 +8,7 @@ import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.platform.LocalContext
 import androidx.metrics.performance.FrameDataApi31
 import androidx.metrics.performance.JankStats
+import com.danyastry.performance.core.ui.platform.findActivity
 
 @Composable
 fun JankStatsEffect(active: Boolean, counter: JankCounter) {
@@ -31,10 +29,4 @@ fun JankStatsEffect(active: Boolean, counter: JankCounter) {
     LaunchedEffect(active, counter) {
         if (!active) counter.flush()
     }
-}
-
-private tailrec fun Context.findActivity(): Activity? = when (this) {
-    is Activity -> this
-    is ContextWrapper -> baseContext.findActivity()
-    else -> null
 }

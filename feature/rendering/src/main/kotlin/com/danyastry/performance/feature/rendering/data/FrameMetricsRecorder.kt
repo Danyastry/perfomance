@@ -6,9 +6,10 @@ import android.os.HandlerThread
 import android.view.FrameMetrics
 import android.view.Window
 import com.danyastry.performance.feature.rendering.logic.FrameHistory
+import com.danyastry.performance.feature.rendering.logic.FrameMetricsSink
 import com.danyastry.performance.feature.rendering.model.FramePhase
 
-class FrameMetricsRecorder(private val history: FrameHistory) : Window.OnFrameMetricsAvailableListener {
+class FrameMetricsRecorder(private val sink: FrameMetricsSink) : Window.OnFrameMetricsAvailableListener {
 
     private val scratch = LongArray(FramePhase.entries.size)
     private var thread: HandlerThread? = null
@@ -44,7 +45,7 @@ class FrameMetricsRecorder(private val history: FrameHistory) : Window.OnFrameMe
             FrameHistory.NOT_AVAILABLE
         }
         scratch[FramePhase.TOTAL.ordinal] = frameMetrics.getMetric(FrameMetrics.TOTAL_DURATION)
-        history.record(scratch)
+        sink.record(scratch, frameMetrics.getMetric(FrameMetrics.INTENDED_VSYNC_TIMESTAMP), dropCountSinceLastInvocation)
     }
 
     private companion object {

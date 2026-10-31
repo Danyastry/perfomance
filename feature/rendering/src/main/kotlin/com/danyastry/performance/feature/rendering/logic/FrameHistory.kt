@@ -3,20 +3,28 @@ package com.danyastry.performance.feature.rendering.logic
 import com.danyastry.performance.feature.rendering.model.FramePhase
 import com.danyastry.performance.feature.rendering.model.PipelineSnapshot
 
-class FrameHistory(private val window: Int = WINDOW, private val recent: Int = RECENT) {
+class FrameHistory(
+    private val window: Int = WINDOW,
+    private val recent: Int = RECENT,
+    private val nanoTime: () -> Long = System::nanoTime,
+) : FrameMetricsSink {
 
-    private val phases = FramePhase.entries
-    private val values = Array(phases.size) { LongArray(window) }
+    private val allPhases = FramePhase.entries
+    private val values = Array(allPhases.size) { LongArray(window) }
     private var stored = 0
     private var next = 0
     private var frames = 0
     private var gpuSeen = false
+    private var missed = 0
+    private var resetAt = Long.MIN_VALUE
 
     @Synchronized
-    fun record(frame: LongArray) {
-        require(frame.size == phases.size) { "expected ${phases.size} phase values, got ${frame.size}" }
-        for (index in phases.indices) values[index][next] = frame[index]
-        if (frame[FramePhase.GPU.ordinal] >= 0) gpuSeen = true
+    override fun record(phases: LongArray, intendedVsyncNanos: Long, droppedBefore: Int) {
+        require(phases.size == allPhases.size) { "expected ${allPhases.size} phase values, got ${phases.size}" }
+        if (intendedVsyncNanos < resetAt) return
+        missed += droppedBefore
+        for (index in allPhases.indices) values[index][next] = phases[index]
+        if (phases[FramePhase.GPU.ordinal] >= 0) gpuSeen = true
         next = (next + 1) % window
         if (stored < window) stored++
         frames++
@@ -28,12 +36,14 @@ class FrameHistory(private val window: Int = WINDOW, private val recent: Int = R
         next = 0
         frames = 0
         gpuSeen = false
+        missed = 0
+        resetAt = nanoTime()
     }
 
     @Synchronized
     fun snapshot(): PipelineSnapshot {
         if (stored == 0) return PipelineSnapshot.EMPTY
-        val averages = phases.associateWith { phase ->
+        val averages = allPhases.associateWith { phase ->
             val column = values[phase.ordinal]
             var sum = 0L
             var counted = 0
@@ -49,9 +59,9 @@ class FrameHistory(private val window: Int = WINDOW, private val recent: Int = R
         val count = minOf(recent, stored)
         val latest = List(count) { offset ->
             val slot = (next - count + offset + window) % window
-            phases.associateWith { phase -> values[phase.ordinal][slot].coerceAtLeast(0) / NANOS_PER_MILLI }
+            allPhases.associateWith { phase -> values[phase.ordinal][slot].coerceAtLeast(0) / NANOS_PER_MILLI }
         }
-        return PipelineSnapshot(frames = frames, averageMillis = averages, recentMillis = latest, gpuAvailable = gpuSeen)
+        return PipelineSnapshot(frames = frames, averageMillis = averages, recentMillis = latest, gpuAvailable = gpuSeen, missedByMeter = missed)
     }
 
     companion object {

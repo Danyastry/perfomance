@@ -18,6 +18,7 @@ import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Size
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.DrawScope
 import androidx.compose.ui.graphics.drawscope.Stroke
@@ -47,10 +48,9 @@ fun PhaseLoadArea(load: PhaseLoad, modifier: Modifier = Modifier) {
                 BusyWork.spin(BusyWork.LOAD_MILLIS)
                 spinner(angle.value, color)
             }
-            PhaseLoad.RENDER_THREAD -> Canvas(Modifier.fillMaxSize()) {
-                val turn = angle.value
-                overdraw(turn, color)
-                spinner(turn, color)
+            PhaseLoad.RENDER_THREAD -> {
+                Canvas(Modifier.fillMaxSize().graphicsLayer { rotationZ = angle.value }) { overdraw(color) }
+                Canvas(Modifier.fillMaxSize()) { spinner(angle.value, color) }
             }
         }
     }
@@ -84,12 +84,11 @@ private fun DrawScope.spinner(angle: Float, color: Color) {
     )
 }
 
-private fun DrawScope.overdraw(angle: Float, color: Color) {
+private fun DrawScope.overdraw(color: Color) {
     val radius = size.minDimension * OVERDRAW_RADIUS_SHARE
     val faint = color.copy(alpha = OVERDRAW_ALPHA)
-    val turn = Math.toRadians(angle.toDouble())
     for (index in 0 until OVERDRAW_CIRCLES) {
-        val phase = turn + index * GOLDEN_ANGLE
+        val phase = index * GOLDEN_ANGLE
         val x = size.width / 2 + (size.width / 3) * cos(phase).toFloat()
         val y = size.height / 2 + (size.height / 3) * sin(phase * 1.3).toFloat()
         drawCircle(faint, radius = radius, center = Offset(x, y))

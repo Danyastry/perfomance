@@ -12,8 +12,8 @@ class FrameHistoryTest {
     fun `averages each phase over the recorded frames`() {
         val history = FrameHistory(window = 10, recent = 5)
 
-        history.record(frame(draw = 2_000_000, total = 10_000_000))
-        history.record(frame(draw = 4_000_000, total = 14_000_000))
+        history.record(frame(draw = 2_000_000, total = 10_000_000), intendedVsyncNanos = 0, droppedBefore = 0)
+        history.record(frame(draw = 4_000_000, total = 14_000_000), intendedVsyncNanos = 0, droppedBefore = 0)
 
         val snapshot = history.snapshot()
         assertThat(snapshot.frames).isEqualTo(2)
@@ -26,7 +26,7 @@ class FrameHistoryTest {
     fun `keeps only the newest frames and returns the recent ones oldest first`() {
         val history = FrameHistory(window = 3, recent = 2)
 
-        listOf(1L, 2L, 3L, 4L, 5L).forEach { history.record(frame(draw = it * 1_000_000)) }
+        listOf(1L, 2L, 3L, 4L, 5L).forEach { history.record(frame(draw = it * 1_000_000), intendedVsyncNanos = 0, droppedBefore = 0) }
 
         val snapshot = history.snapshot()
         assertThat(snapshot.frames).isEqualTo(5)
@@ -38,11 +38,11 @@ class FrameHistoryTest {
     fun `GPU time is averaged only when the platform reports it`() {
         val history = FrameHistory(window = 4, recent = 4)
 
-        history.record(frame(gpu = FrameHistory.NOT_AVAILABLE))
+        history.record(frame(gpu = FrameHistory.NOT_AVAILABLE), intendedVsyncNanos = 0, droppedBefore = 0)
         assertThat(history.snapshot().gpuAvailable).isFalse()
         assertThat(history.snapshot().averageMillis[FramePhase.GPU]).isEqualTo(0.0)
 
-        history.record(frame(gpu = 6_000_000))
+        history.record(frame(gpu = 6_000_000), intendedVsyncNanos = 0, droppedBefore = 0)
         assertThat(history.snapshot().gpuAvailable).isTrue()
         assertThat(history.snapshot().averageMillis[FramePhase.GPU]).isWithin(1e-9).of(6.0)
         assertThat(history.snapshot().recentMillis.first()[FramePhase.GPU]).isEqualTo(0.0)
@@ -51,7 +51,7 @@ class FrameHistoryTest {
     @Test
     fun `reset forgets everything`() {
         val history = FrameHistory()
-        history.record(frame(draw = 1))
+        history.record(frame(draw = 1), intendedVsyncNanos = 0, droppedBefore = 0)
 
         history.reset()
 
@@ -59,8 +59,37 @@ class FrameHistoryTest {
     }
 
     @Test
+    fun `frames that started before a reset do not reach the new averages`() {
+        var now = 1_000L
+        val history = FrameHistory(window = 10, recent = 10, nanoTime = { now })
+        history.record(frame(draw = 9_000_000), intendedVsyncNanos = 500, droppedBefore = 0)
+
+        now = 2_000
+        history.reset()
+        history.record(frame(draw = 8_000_000), intendedVsyncNanos = 1_900, droppedBefore = 0)
+        history.record(frame(draw = 2_000_000), intendedVsyncNanos = 2_100, droppedBefore = 0)
+
+        val snapshot = history.snapshot()
+        assertThat(snapshot.frames).isEqualTo(1)
+        assertThat(snapshot.averageMillis[FramePhase.DRAW]).isWithin(1e-9).of(2.0)
+    }
+
+    @Test
+    fun `counts the reports FrameMetrics dropped and forgets them on reset`() {
+        val history = FrameHistory()
+
+        history.record(frame(), intendedVsyncNanos = 0, droppedBefore = 0)
+        history.record(frame(), intendedVsyncNanos = 0, droppedBefore = 3)
+        assertThat(history.snapshot().missedByMeter).isEqualTo(3)
+
+        history.reset()
+        history.record(frame(), intendedVsyncNanos = Long.MAX_VALUE, droppedBefore = 0)
+        assertThat(history.snapshot().missedByMeter).isEqualTo(0)
+    }
+
+    @Test
     fun `rejects a frame with the wrong number of phases`() {
-        assertThrows(IllegalArgumentException::class.java) { FrameHistory().record(LongArray(3)) }
+        assertThrows(IllegalArgumentException::class.java) { FrameHistory().record(LongArray(3), intendedVsyncNanos = 0, droppedBefore = 0) }
     }
 
     private fun frame(draw: Long = 0, total: Long = 0, gpu: Long = 0): LongArray =
